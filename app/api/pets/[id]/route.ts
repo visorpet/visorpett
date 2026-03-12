@@ -5,6 +5,8 @@ import { db } from "@/lib/db";
 import { updatePetSchema } from "@/lib/validations/pet";
 import { z } from "zod";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }

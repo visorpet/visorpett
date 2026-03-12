@@ -14,6 +14,8 @@ const petshopUpdateSchema = z.object({
   state: z.string().optional(),
 });
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);

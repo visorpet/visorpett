@@ -5,6 +5,8 @@ import { db } from "@/lib/db";
 import { clientSchema } from "@/lib/validations/client";
 import { z } from "zod";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);

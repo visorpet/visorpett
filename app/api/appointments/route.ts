@@ -5,6 +5,8 @@ import { db } from "@/lib/db";
 import { appointmentSchema } from "@/lib/validations/appointment";
 import { z } from "zod";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
