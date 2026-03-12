@@ -177,18 +177,87 @@ export default function DonoInicioPage() {
         </div>
       </section>
 
-      {/* ── WhatsApp quick actions ── */}
-      <section className="animate-slide-up">
-        <p className="section-label mb-3">Automações</p>
-        <div className="grid grid-cols-2 gap-3">
-          <button className="btn-whatsapp flex-1 py-3 text-sm">
-            <MaterialIcon icon="chat" size="sm" />
-            Lembrete em massa
+      {/* ── Retorno Automation Section ── */}
+      <section className="animate-slide-up space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold flex items-center gap-2 text-gray-900">
+            <MaterialIcon icon="auto_mode" size="md" className="text-primary" />
+            Automação de Retorno
+          </h2>
+          <button className="text-primary text-sm font-semibold hover:underline">
+            Ver todos
           </button>
-          <Link href="/dono/clientes" className="btn-secondary flex-1 py-3 text-sm text-center">
-            <MaterialIcon icon="group" size="sm" />
-            Reativar clientes
-          </Link>
+        </div>
+
+        <div className="space-y-3">
+          {/* Pet Card 1 */}
+          <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Avatar name="Thor" size="md" />
+                <span className="absolute bottom-0 right-0 bg-emerald-500 w-3 h-3 rounded-full border-2 border-white" />
+              </div>
+              <div>
+                <p className="font-bold text-lg text-gray-900">Thor</p>
+                <div className="flex items-center gap-1 text-red-500">
+                  <MaterialIcon icon="schedule" size="xs" />
+                  <p className="text-sm font-medium leading-none">28 dias sem banho</p>
+                </div>
+              </div>
+            </div>
+            <Link
+              href="https://wa.me/5511999999999"
+              target="_blank"
+              className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all bg-[#25D366] hover:bg-[#20bd5a]"
+            >
+              <MaterialIcon icon="chat" size="xs" />
+              Enviar
+            </Link>
+          </div>
+
+          {/* Pet Card 2 */}
+          <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Avatar name="Bela" size="md" />
+              </div>
+              <div>
+                <p className="font-bold text-lg text-gray-900">Bela</p>
+                <div className="flex items-center gap-1 text-red-600">
+                  <MaterialIcon icon="schedule" size="xs" />
+                  <p className="text-sm font-medium leading-none">32 dias sem banho</p>
+                </div>
+              </div>
+            </div>
+            <Link
+              href="https://wa.me/5511999999999"
+              target="_blank"
+              className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all bg-[#25D366] hover:bg-[#20bd5a]"
+            >
+              <MaterialIcon icon="chat" size="xs" />
+              Enviar
+            </Link>
+          </div>
+
+          {/* Pet Card 3 */}
+          <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-100 shadow-sm opacity-80">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Avatar name="Max" size="md" />
+              </div>
+              <div>
+                <p className="font-bold text-lg text-gray-900">Max</p>
+                <div className="flex items-center gap-1 text-gray-500">
+                  <MaterialIcon icon="schedule" size="xs" />
+                  <p className="text-sm font-medium leading-none">15 dias sem banho</p>
+                </div>
+              </div>
+            </div>
+            <button className="flex items-center gap-2 bg-gray-100 text-gray-500 px-4 py-2 rounded-lg text-sm font-semibold cursor-not-allowed">
+              <MaterialIcon icon="check_circle" size="xs" />
+              Agendado
+            </button>
+          </div>
         </div>
       </section>
     </div>
