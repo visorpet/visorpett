@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pet Flow - Novo Agendamento</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b5bad",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#13131f",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark overflow-x-hidden max-w-md mx-auto shadow-xl">
+<!-- Top Navigation -->
+<div class="sticky top-0 z-10 flex items-center bg-white dark:bg-slate-900 p-4 pb-2 justify-between border-b border-slate-200 dark:border-slate-800">
+<div class="text-primary flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-primary/10 transition-colors cursor-pointer">
+<span class="material-symbols-outlined">arrow_back</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Novo Agendamento</h2>
+</div>
+<div class="flex flex-col gap-6 pb-32 pt-4">
+<!-- 1. Seleção do Pet -->
+<section>
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight px-4 pb-3">1. Selecione o Pet</h3>
+<div class="flex w-full overflow-x-auto px-4 py-2 no-scrollbar">
+<div class="flex flex-row items-start justify-start gap-6">
+<!-- Pet Item Active -->
+<div class="flex flex-col items-center gap-2 w-20 text-center cursor-pointer">
+<div class="relative">
+<div class="w-16 h-16 bg-center bg-no-repeat bg-cover rounded-full border-4 border-primary p-0.5" data-alt="Cachorro Beagle marrom e branco sorrindo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDtTmoIXGdhLWKJB0v2nQ6kWQ4zWwYbclq6g_BE6bWsCZlv6uhaUnQQW_wBP1G_kLV4w8mybgKFrbLMOdzcy8sf3Y-Sk8KiTjgYYUjAcCD9LBhUoxHoNdvsWPxH-ZbO33FHDhufjuYme24uG0X-Qs5KoF9ifd2TYoejmKVSxtvDGzzO8FV4rCdGe-6aWwcOFTa9YZXI2DIFwWRIsuXi05idBNDcI7OA8upbi8HEWmWPSAV8Z9Pe1wbCGG0Fua-b_kAhXO32yDpWcPfj");'></div>
+<div class="absolute -top-1 -right-1 bg-primary text-white rounded-full p-0.5">
+<span class="material-symbols-outlined text-xs">check</span>
+</div>
+</div>
+<p class="text-primary text-sm font-semibold">Totó</p>
+</div>
+<!-- Pet Item -->
+<div class="flex flex-col items-center gap-2 w-20 text-center cursor-pointer">
+<div class="w-16 h-16 bg-center bg-no-repeat bg-cover rounded-full border-2 border-transparent grayscale" data-alt="Gato cinza olhando para a câmera" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAvjZjQe20X3JlH7cXr-UIzyi-j_TgbPXGqRO4hRdjH9nDy9mk5fY87Utc7Hw2QmvqezsnhuZikJHLtEuFhCvFmMjf_6bh9WR8m2IaE3Lm9k4EaKxypmAPDDO7NorS24vc6HcO9tTOXcfn6OOy6R0zOwRAUOfQ9t8f31s2MFdn-LojcDNSWMj7kW1iF3HwvwXKEqloBMzB8_0R20IzTb96Hcx35WWi5jOeYpBfx6hlDQ-l4cXEBkUYr624rzwZ8OdVKCHg_Y6I7uq1O");'></div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal">Mel</p>
+</div>
+<!-- Pet Item -->
+<div class="flex flex-col items-center gap-2 w-20 text-center cursor-pointer">
+<div class="w-16 h-16 bg-center bg-no-repeat bg-cover rounded-full border-2 border-transparent grayscale" data-alt="Cachorro Golden Retriever com língua de fora" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAH7sKFYDCkCekGHn5IdRtY9voEfym9OXlBlrzFKc55tl6JYw4W9askgrgx7EnSQvXXkQ_92IpXDTU9n-wx8g-ezvxBycmQPskkopRsuZ8LmYBKwqvni01muKsEb8vpKXlPbXIH0xVTi9WCXmjt8tZWCc3KW5juiZ9LjzoPzW5XfxPEpSwOPDr2wLAiX7JybZ6mlG7TF-Hc72y9oFptJcW8vH7P_0HUUQb7DmUE3HRn97FfWdyKcJA6XclZRoidhDGV9ssXr2114XqE");'></div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal">Thor</p>
+</div>
+<!-- Add New Pet -->
+<div class="flex flex-col items-center gap-2 w-20 text-center cursor-pointer">
+<div class="w-16 h-16 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500">
+<span class="material-symbols-outlined">add</span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal">Novo</p>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. Seleção do Serviço -->
+<section>
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight px-4 pb-3">2. Selecione o Serviço</h3>
+<div class="px-4 flex flex-col gap-3">
+<!-- Service Card -->
+<div class="flex items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl border-2 border-primary shadow-sm">
+<div class="bg-primary/10 text-primary flex items-center justify-center rounded-lg size-12">
+<span class="material-symbols-outlined">bathtub</span>
+</div>
+<div class="flex flex-col flex-1">
+<p class="text-slate-900 dark:text-slate-100 text-base font-bold">Banho</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs">Higiene completa e secagem</p>
+</div>
+<div class="text-right">
+<p class="text-primary font-bold">R$ 50,00</p>
+<div class="flex justify-end mt-1">
+<div class="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+<div class="w-2 h-2 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Service Card -->
+<div class="flex items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center rounded-lg size-12">
+<span class="material-symbols-outlined">content_cut</span>
+</div>
+<div class="flex flex-col flex-1">
+<p class="text-slate-900 dark:text-slate-100 text-base font-bold">Tosa Higiênica</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs">Patinhas, barriga e rosto</p>
+</div>
+<div class="text-right">
+<p class="text-slate-900 dark:text-slate-100 font-bold">R$ 85,00</p>
+<div class="flex justify-end mt-1">
+<div class="w-5 h-5 rounded-full border-2 border-slate-300 dark:border-slate-700"></div>
+</div>
+</div>
+</div>
+<!-- Service Card -->
+<div class="flex items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center rounded-lg size-12">
+<span class="material-symbols-outlined">content_cut</span>
+</div>
+<div class="flex flex-col flex-1">
+<p class="text-slate-900 dark:text-slate-100 text-base font-bold">Tosa Completa</p>
+<p class="text-slate-500 dark:text-slate-400 text-xs">Corte na máquina ou tesoura</p>
+</div>
+<div class="text-right">
+<p class="text-slate-900 dark:text-slate-100 font-bold">R$ 120,00</p>
+<div class="flex justify-end mt-1">
+<div class="w-5 h-5 rounded-full border-2 border-slate-300 dark:border-slate-700"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. Seleção de Data -->
+<section>
+<div class="flex items-center justify-between px-4 pb-3">
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight">3. Selecione a Data</h3>
+<span class="text-primary text-sm font-medium">Novembro</span>
+</div>
+<div class="flex w-full overflow-x-auto px-4 no-scrollbar gap-3">
+<div class="flex flex-col items-center justify-center min-w-[60px] h-20 bg-primary rounded-xl text-white shadow-md">
+<p class="text-[10px] uppercase font-bold opacity-80">Sex</p>
+<p class="text-xl font-bold">24</p>
+</div>
+<div class="flex flex-col items-center justify-center min-w-[60px] h-20 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<p class="text-[10px] uppercase font-bold text-slate-500">Sáb</p>
+<p class="text-xl font-bold text-slate-900 dark:text-slate-100">25</p>
+</div>
+<div class="flex flex-col items-center justify-center min-w-[60px] h-20 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm opacity-50">
+<p class="text-[10px] uppercase font-bold text-slate-500">Dom</p>
+<p class="text-xl font-bold text-slate-900 dark:text-slate-100">26</p>
+</div>
+<div class="flex flex-col items-center justify-center min-w-[60px] h-20 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<p class="text-[10px] uppercase font-bold text-slate-500">Seg</p>
+<p class="text-xl font-bold text-slate-900 dark:text-slate-100">27</p>
+</div>
+<div class="flex flex-col items-center justify-center min-w-[60px] h-20 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<p class="text-[10px] uppercase font-bold text-slate-500">Ter</p>
+<p class="text-xl font-bold text-slate-900 dark:text-slate-100">28</p>
+</div>
+<div class="flex flex-col items-center justify-center min-w-[60px] h-20 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<p class="text-[10px] uppercase font-bold text-slate-500">Qua</p>
+<p class="text-xl font-bold text-slate-900 dark:text-slate-100">29</p>
+</div>
+</div>
+</section>
+<!-- 4. Seleção de Horário -->
+<section>
+<h3 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight px-4 pb-3">4. Selecione o Horário</h3>
+<div class="px-4 grid grid-cols-3 gap-3">
+<div class="bg-primary/10 border border-primary/30 text-primary py-3 rounded-lg text-center font-bold">
+                        09:00
+                    </div>
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 py-3 rounded-lg text-center font-medium shadow-sm">
+                        10:00
+                    </div>
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 py-3 rounded-lg text-center font-medium shadow-sm">
+                        11:00
+                    </div>
+<div class="bg-slate-100 dark:bg-slate-800/50 text-slate-400 py-3 rounded-lg text-center font-medium line-through">
+                        13:00
+                    </div>
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 py-3 rounded-lg text-center font-medium shadow-sm">
+                        14:30
+                    </div>
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 py-3 rounded-lg text-center font-medium shadow-sm">
+                        16:00
+                    </div>
+</div>
+</section>
+</div>
+<!-- Footer Button -->
+<div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-4 pb-8 border-t border-slate-200 dark:border-slate-800">
+<div class="flex items-center justify-between mb-4">
+<div class="flex flex-col">
+<span class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-widest font-bold">Resumo</span>
+<span class="text-lg font-bold text-slate-900 dark:text-slate-100">Totó - Banho</span>
+</div>
+<div class="text-right">
+<span class="text-2xl font-black text-primary">R$ 50,00</span>
+</div>
+</div>
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/30 transition-all flex items-center justify-center gap-2">
+<span>Confirmar Agendamento</span>
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</body></html>

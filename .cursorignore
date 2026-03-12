@@ -1,0 +1,6 @@
+# Bloqueia arquivos que causam erro de truncation
+node_modules/
+.git/
+*.log
+tmp/
+dist/

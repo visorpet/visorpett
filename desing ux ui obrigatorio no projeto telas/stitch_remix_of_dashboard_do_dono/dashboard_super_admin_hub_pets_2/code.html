@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VisorPet - Super Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b2bab",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#13131f",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<div class="flex min-h-screen">
+<!-- Sidebar -->
+<aside class="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col fixed h-full z-50">
+<div class="p-6">
+<div class="flex items-center gap-3">
+<div class="bg-primary/10 rounded-lg p-2 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl font-bold">pets</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-slate-900 dark:text-white text-lg font-black leading-tight tracking-tight">VisorPet</h1>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-widest">Gestão inteligente para banho e tosa</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary text-white shadow-lg shadow-primary/20" href="#">
+<span class="material-symbols-outlined fill-1">dashboard</span>
+<span class="text-sm font-semibold">Painel</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">storefront</span>
+<span class="text-sm font-semibold">Pet Shops</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="text-sm font-semibold">Planos</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-sm font-semibold">Financeiro</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">support_agent</span>
+<span class="text-sm font-semibold">Suporte</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-semibold">Configurações</span>
+</a>
+<div class="mt-4 flex items-center gap-3 p-2 bg-slate-50 dark:bg-slate-800 rounded-xl">
+<div class="h-10 w-10 rounded-full bg-primary/20 overflow-hidden flex items-center justify-center">
+<img alt="User avatar" class="h-full w-full object-cover" data-alt="User avatar for the super administrator" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEL_kNRBw0VJeawq-KfnscskFu9HXiNH17jpaf6nde_EFmYcVaOrOSxCldw-AlYXkA2TU4kQPBPPMumzPrvLnCByZjf6noS6OUGD46pZgl3Gv6LY0Eichnkr07je2xjq_yokcQ50YPVS9SwxqRVD26oMS_ThR68B9m7qpLCbeJQPpnmlHe5lCACI8P-MOBfWk98uf72WnMqu8g8a2Ts0bN-YOUONmDiZZTPxhjImBVXru-NYtgp6ZDDPaGK1CyA1DWYkY6-vKnkxf5"/>
+</div>
+<div class="overflow-hidden">
+<p class="text-sm font-bold truncate">Carlos Silva</p>
+<p class="text-[10px] text-slate-500 truncate uppercase">Owner</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 ml-64 p-8">
+<!-- Header -->
+<header class="flex items-center justify-between mb-8">
+<div>
+<h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Visão Geral do Negócio - VisorPet</h2>
+<p class="text-slate-500 dark:text-slate-400 font-medium">Métricas de desempenho da plataforma VisorPet • Gestão inteligente para banho e tosa</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all w-64 text-sm" placeholder="Buscar..." type="text"/>
+</div>
+<button class="p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 hover:text-primary transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+</button>
+</div>
+</header>
+<!-- Metric Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div class="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
+<span class="material-symbols-outlined">storefront</span>
+</div>
+<span class="text-emerald-500 text-sm font-bold flex items-center">
+<span class="material-symbols-outlined text-sm mr-1">trending_up</span>+12%
+                        </span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Total de Pet Shops</p>
+<p class="text-2xl font-black text-slate-900 dark:text-white">1.250</p>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div class="p-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg">
+<span class="material-symbols-outlined">group</span>
+</div>
+<span class="text-emerald-500 text-sm font-bold flex items-center">
+<span class="material-symbols-outlined text-sm mr-1">trending_up</span>+5%
+                        </span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Inquilinos Ativos</p>
+<p class="text-2xl font-black text-slate-900 dark:text-white">980</p>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div class="p-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<span class="text-emerald-500 text-sm font-bold flex items-center">
+<span class="material-symbols-outlined text-sm mr-1">trending_up</span>+15%
+                        </span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">MRR (Receita Mensal)</p>
+<p class="text-2xl font-black text-slate-900 dark:text-white">R$ 45.000</p>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div class="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg">
+<span class="material-symbols-outlined">monitoring</span>
+</div>
+<span class="text-red-500 text-sm font-bold flex items-center">
+<span class="material-symbols-outlined text-sm mr-1">trending_down</span>-0.5%
+                        </span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Taxa de Churn</p>
+<p class="text-2xl font-black text-slate-900 dark:text-white">2,4%</p>
+</div>
+</div>
+<!-- Charts & Content -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+<!-- Revenue Chart Placeholder -->
+<div class="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-lg font-bold">Crescimento de Receita</h3>
+<div class="flex gap-2">
+<button class="px-3 py-1 text-xs font-bold rounded-lg bg-primary/10 text-primary">Mensal</button>
+<button class="px-3 py-1 text-xs font-bold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500">Anual</button>
+</div>
+</div>
+<div class="h-64 flex items-end justify-between gap-2 px-2">
+<!-- Simulated Chart bars/lines with Tailwind -->
+<div class="flex-1 bg-primary/20 dark:bg-primary/10 rounded-t h-[40%] relative group">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">R$ 32k</div>
+</div>
+<div class="flex-1 bg-primary/30 dark:bg-primary/20 rounded-t h-[55%] relative group"></div>
+<div class="flex-1 bg-primary/40 dark:bg-primary/30 rounded-t h-[45%] relative group"></div>
+<div class="flex-1 bg-primary/50 dark:bg-primary/40 rounded-t h-[70%] relative group"></div>
+<div class="flex-1 bg-primary/60 dark:bg-primary/50 rounded-t h-[60%] relative group"></div>
+<div class="flex-1 bg-primary/70 dark:bg-primary/60 rounded-t h-[85%] relative group"></div>
+<div class="flex-1 bg-primary rounded-t h-[100%] relative group"></div>
+</div>
+<div class="flex justify-between mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+<span>Jan</span><span>Fev</span><span>Mar</span><span>Abr</span><span>Mai</span><span>Jun</span><span>Jul</span>
+</div>
+</div>
+<!-- Plans Pie Chart Placeholder -->
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<h3 class="text-lg font-bold mb-6">Distribuição de Planos</h3>
+<div class="relative h-48 w-48 mx-auto mb-6">
+<!-- Abstract Pie Chart Representation -->
+<div class="absolute inset-0 rounded-full border-[16px] border-slate-100 dark:border-slate-800"></div>
+<div class="absolute inset-0 rounded-full border-[16px] border-primary border-t-transparent border-l-transparent transform rotate-45"></div>
+<div class="absolute inset-0 rounded-full border-[16px] border-emerald-500 border-b-transparent border-r-transparent border-l-transparent transform -rotate-12"></div>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-2xl font-black">980</span>
+<span class="text-[10px] text-slate-500 uppercase font-bold">Total</span>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-slate-300"></span>
+<span class="text-slate-600 dark:text-slate-400 font-medium">Free</span>
+</div>
+<span class="font-bold">45%</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<span class="text-slate-600 dark:text-slate-400 font-medium">Pro</span>
+</div>
+<span class="font-bold">35%</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+<span class="text-slate-600 dark:text-slate-400 font-medium">Premium</span>
+</div>
+<span class="font-bold">20%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Activity -->
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+<!-- Recent New Signups -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+<h3 class="text-lg font-bold">Novos Cadastros</h3>
+<button class="text-primary text-sm font-bold hover:underline">Ver todos</button>
+</div>
+<div class="divide-y divide-slate-100 dark:divide-slate-800">
+<div class="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+<img alt="Store logo" data-alt="Geometric avatar for Pet Shop Paws e Cores" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCW5c-fq2HO7ZI6LeBkYVbwZNsHuA4qoj55TCYBFCxo-C2_-TIWew1S87gYjLZpue5KPAlgXz1GdukGwQzsBIfzopTqFvEC-I8VeYn4uGQTy3cU45lj90jUtNk0fLxqWFuufnOIt8G8iZZtnzie2JhbpM6ZY9PflkiO3cxDZe9RXT8UdPLSf_AepKeEj2JhN_Y0jmWNHzwIcoMKKeCqd_M4_LNDBci7UDbaqq0XyQqlKE1eLgg5DtVoRcgjphWo9qzY1FumwcF9Az1x"/>
+</div>
+<div>
+<p class="text-sm font-bold">Paws e Cores Pet Shop</p>
+<p class="text-xs text-slate-500 font-medium">São Paulo, SP • Há 2 horas</p>
+</div>
+</div>
+<span class="px-2 py-1 text-[10px] font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded uppercase">Plano Pro</span>
+</div>
+<div class="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+<img alt="Store logo" data-alt="Geometric avatar for Buddy Grooming" src="https://lh3.googleusercontent.com/aida-public/AB6AXuARER9ZHj2pxLfLJCIj96ki2QejCzu12EG1e952Mzm56n9224dAlpvFkNp1XaEEOSaj8TVvvWepOGYDUZEwbc7NYeuFHjEsHErkJKH3W6mhsZ7xu9YRu7YsLvDA6Grg1BbnwC3V9QJN-VGwP4gpBtdSsHLPrq7H4dfARnpw6f9J2l2buagJFZbIbnZgPbcZBqsG065ph9S0RxFrhoi7NEXHjah6svXK3luV-Wc-1C2CbaCTjuqs3dw-kjt_ThPtGzKMUeIqqvcj5JFw"/>
+</div>
+<div>
+<p class="text-sm font-bold">Buddy Grooming</p>
+<p class="text-xs text-slate-500 font-medium">Curitiba, PR • Há 5 horas</p>
+</div>
+</div>
+<span class="px-2 py-1 text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 rounded uppercase">Plano Free</span>
+</div>
+<div class="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+<img alt="Store logo" data-alt="Geometric avatar for VetCare Premium" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIsOHf6MMkT_TZ_991Y2DDNprioZgMZaiLCxHI8ZzoXkVKLS49TNbUw8ojZcXmHp9D0UqPqy0_d8i0MSh_lPHnBtsLN7ZnncQcY9BEXRhTeaOOhWIJQqGyC7ys8uwdRUSLuUDT7ZduJmLhavdv-NtPRSztGNh7aGgG2tN686Ach4pq1UpQ4IGs5J2yHyMI9hZS2a_fqoYFcGehvDA83rO480GRlUWG4JYWSJrxTIO6YiiDISWSpBc5SErqE9YMSdNKp56PGC6qW3bj"/>
+</div>
+<div>
+<p class="text-sm font-bold">VetCare Premium</p>
+<p class="text-xs text-slate-500 font-medium">Rio de Janeiro, RJ • Há 1 dia</p>
+</div>
+</div>
+<span class="px-2 py-1 text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded uppercase">Plano Premium</span>
+</div>
+</div>
+</div>
+<!-- Recent Payments -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+<h3 class="text-lg font-bold">Pagamentos Recentes</h3>
+<button class="text-primary text-sm font-bold hover:underline">Relatório Financeiro</button>
+</div>
+<div class="divide-y divide-slate-100 dark:divide-slate-800">
+<div class="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div>
+<p class="text-sm font-bold">Dog Style Boutique</p>
+<p class="text-xs text-slate-500 font-medium">ID: #PF-8842 • 12/10/2023</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-black text-slate-900 dark:text-white">R$ 149,90</p>
+<p class="text-[10px] text-emerald-500 font-bold uppercase">Confirmado</p>
+</div>
+</div>
+<div class="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div>
+<p class="text-sm font-bold">Clínica Pet Amigo</p>
+<p class="text-xs text-slate-500 font-medium">ID: #PF-8841 • 12/10/2023</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-black text-slate-900 dark:text-white">R$ 299,00</p>
+<p class="text-[10px] text-emerald-500 font-bold uppercase">Confirmado</p>
+</div>
+</div>
+<div class="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 flex items-center justify-center">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+<div>
+<p class="text-sm font-bold">Banho e Tosa do João</p>
+<p class="text-xs text-slate-500 font-medium">ID: #PF-8840 • 11/10/2023</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-black text-slate-900 dark:text-white">R$ 149,90</p>
+<p class="text-[10px] text-amber-500 font-bold uppercase">Pendente</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

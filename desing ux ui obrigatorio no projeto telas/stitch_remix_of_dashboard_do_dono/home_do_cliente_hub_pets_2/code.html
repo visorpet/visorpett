@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2B5BAD",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#13131f",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<!-- Main Container -->
+<div class="max-w-md mx-auto min-h-screen flex flex-col pb-24">
+<!-- Header -->
+<header class="flex items-center justify-between p-6 bg-white dark:bg-slate-900/50 border-b border-primary/10">
+<div class="flex items-center gap-4">
+<div class="relative">
+<div class="size-14 rounded-full bg-primary/10 border-2 border-primary overflow-hidden">
+<img alt="Foto de perfil do cliente" class="w-full h-full object-cover" data-alt="Homem jovem sorrindo com barba curta" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDw-IfuXgeVCvWnNcbWKZIlUj42xTeGhqE3b_I1T9HlAJb1UdvR9eFvieulhSXb-n98SmU0IFx2vzh5vqD_wz9tulHjer3buZUt71Y9raL_4o7g18ANP5TozoUKDkLh_gOGYWt59jmME3e87OHHczUKmx-k9OB1jRC4C19b2rZWISUEUd0mAs77vb19k0XJxjjw2G5RG5RL1w82sKB6ZhVF2uFUZKWNNiaazPq8kRGy0Wh4HvJDg_tGvS0NRgIvo5u1ZuP-TQOPjjRJ"/>
+</div>
+<div class="absolute bottom-0 right-0 size-4 bg-green-500 border-2 border-white dark:border-slate-900 rounded-full"></div>
+</div>
+<div>
+<h1 class="text-lg font-bold leading-tight">Olá, Guilherme!</h1>
+<p class="text-sm text-slate-500 dark:text-slate-400">Área do Cliente • VisorPet<br/><span class="text-[10px] font-medium block mt-0.5 opacity-75">Gestão inteligente para banho e tosa</span></p>
+</div>
+</div>
+<button class="size-10 flex items-center justify-center rounded-full bg-primary/5 text-primary">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="p-4 space-y-6">
+<!-- Próximo Agendamento -->
+<section>
+<div class="flex items-center justify-between mb-3 px-1">
+<h2 class="font-bold text-lg">Próximo Agendamento</h2>
+<span class="text-xs font-semibold text-primary px-2 py-1 bg-primary/10 rounded-full">1 Pendente</span>
+</div>
+<div class="bg-white dark:bg-slate-900 rounded-xl p-4 shadow-sm border border-primary/5 flex gap-4">
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary text-sm">calendar_today</span>
+<p class="text-sm font-semibold text-primary">Amanhã, 14 de Outubro</p>
+</div>
+<h3 class="font-bold text-base mb-1">Banho e Tosa Completa</h3>
+<p class="text-sm text-slate-500 mb-4">Luna • 10:00 - 11:30</p>
+<div class="flex gap-2">
+<button class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg">Confirmar</button>
+<button class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-xs font-bold rounded-lg">Detalhes</button>
+</div>
+</div>
+<div class="w-24 h-24 rounded-lg overflow-hidden shrink-0">
+<img alt="Foto da cachorrinha Luna" class="w-full h-full object-cover" data-alt="Cachorro da raça Golden Retriever sorrindo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw7GUFDs62A8da3JMDNeTPjuq8xBtbc13xrj7ewlwPx7FJoex8smW9T_UEVnC28YRsLtoWYX22qgqROunnPhbL_93g4RpH-IYLX2nVBG7sFLhTpTdoHwpqavbJbna8jOGiyKmaX2evpMMK8VDf0U9OuT_R37cPdIBkdCWdXCdmwYEEHGJcwfYAHI1ih05CSjJ_NWW0FBpSc2LUoMxA1pagfwKCezH2KkjRMqmslvIKhow0abuoxDyRMK0MLpQeUDx1KD7ZfrhWBcWB"/>
+</div>
+</div>
+</section>
+<!-- Meus Pets -->
+<section>
+<div class="flex items-center justify-between mb-3 px-1">
+<h2 class="font-bold text-lg">Meus Pets</h2>
+<button class="text-primary text-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">add_circle</span>
+                        Novo
+                    </button>
+</div>
+<div class="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+<div class="flex flex-col items-center gap-2 shrink-0">
+<div class="size-16 rounded-full ring-2 ring-primary ring-offset-2 overflow-hidden border-2 border-transparent">
+<img alt="Luna" class="w-full h-full object-cover" data-alt="Golden Retriever filhote" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9JqJunpHnwzY0pbewm-T72lnHc1bYxlokUtwakE2NW5TJEj9j6MuKSyasbenVRoPQKleRj0JmTsCLmPfWyxDLD9fyGbuhLGWJz_6NpM_hk6qVf-QkiO0O7K7vKeO2jxPjK0IEslPwol8n5Yyl3Dlk7E8-frGmj2zdbv9JXa6IJ-qwMwCiiSlVMVQOaCDY9w0GFalBmyM8Qrqq8tKZ9NgdhgCRL_z5g7uHR2o55I3yiWl8HtNubdOiR1tOAamZqkSb_-lco6S1fbt7"/>
+</div>
+<span class="text-xs font-bold">Luna</span>
+</div>
+<div class="flex flex-col items-center gap-2 shrink-0">
+<div class="size-16 rounded-full overflow-hidden border-2 border-slate-200 dark:border-slate-800">
+<img alt="Mingau" class="w-full h-full object-cover" data-alt="Gato branco e cinza" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXOj8IqSqFsEYkM1OQoGWcDN8n5-VrIGlwHPuCTdSffn4qMfFQOSzV2IkwMxuAAlvWKcTCPAjyG1ihHkcDdQsUnpHw7UGtMiYYn_nboH-lmXpyomVL3GfhOugjFPsZQlKcGECivEfiy6wZK9C_FVDo_Vg0Tr9FOg0dVnQC7i41WVdWovQk6pMl6KPm2ZBFxyPjoVDl8eTA4zyc7nS3tyl_wYl4aJbuDyigzb0Mig3UcSYRlozZvHm4e9ZZbdtpgqqT6lpTPeo_8GMA"/>
+</div>
+<span class="text-xs font-medium text-slate-500">Mingau</span>
+</div>
+<div class="flex flex-col items-center gap-2 shrink-0">
+<div class="size-16 rounded-full overflow-hidden border-2 border-slate-200 dark:border-slate-800">
+<img alt="Max" class="w-full h-full object-cover" data-alt="Cachorro pequeno raça Jack Russell" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnGU_t_Sev89kM4As53vkopY95I-EC6FrvFPylT2oD3c4kw77ujrdtVe2cWcfxYrnWKGpa3EuXqtS8bnuZrmxmHPWoK5BWMP2IN3F4_W8yUmsNKAg0IBkRu3kbtPsrd-7G_RQBuTZueONAm1KLwmKD9ZD_96WNNl_ca5rmB5WvlNI94beBvvaO3BkOL7NjGANwxKfAI2aLDGR0YPPKhVgzm45eRV09ArA5LsCMMbm0bf042foS5EfIPTt6gpwuQn4I6WlNWqgtS6Un"/>
+</div>
+<span class="text-xs font-medium text-slate-500">Max</span>
+</div>
+<div class="flex flex-col items-center gap-2 shrink-0">
+<div class="size-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-700">
+<span class="material-symbols-outlined text-slate-400">pets</span>
+</div>
+<span class="text-xs font-medium text-slate-400">Ver todos</span>
+</div>
+</div>
+</section>
+<!-- Pacotes Ativos -->
+<section>
+<h2 class="font-bold text-lg mb-3 px-1">Pacotes Ativos</h2>
+<div class="bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-xl p-5">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-bold text-primary">Plano Fidelidade Plus</h3>
+<p class="text-xs text-slate-600 dark:text-slate-400 italic">Vence em 22 dias</p>
+</div>
+<span class="material-symbols-outlined text-primary">inventory_2</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-xs font-bold">
+<span>Banho &amp; Hidratação</span>
+<span>3 / 5 sessões</span>
+</div>
+<div class="w-full h-2.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full w-[60%]"></div>
+</div>
+<p class="text-[10px] text-slate-500 text-right">Faltam apenas 2 para o próximo bônus!</p>
+</div>
+</div>
+</section>
+<!-- Indique e Ganhe -->
+<section class="bg-gradient-to-br from-primary to-indigo-800 rounded-xl p-5 text-white shadow-lg">
+<div class="flex items-center gap-3 mb-3">
+<div class="size-10 bg-white/20 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">card_giftcard</span>
+</div>
+<div>
+<h3 class="font-bold leading-tight">Indique e Ganhe R$ 20</h3>
+<p class="text-xs text-white/80">Seu amigo ganha 15% na 1ª visita.</p>
+</div>
+</div>
+<div class="bg-white/10 border border-white/20 rounded-lg p-3 flex items-center justify-between">
+<div>
+<p class="text-[10px] uppercase tracking-wider font-bold text-white/60 mb-1">Seu Código</p>
+<p class="font-mono text-lg font-bold">VISORPET-GUI7</p>
+</div>
+<button class="bg-white text-primary px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">content_copy</span>
+                        Copiar
+                    </button>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-6 py-3 flex justify-between items-center z-50">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined fill-icon">home</span>
+<span class="text-[10px] font-bold">Início</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">calendar_add_on</span>
+<span class="text-[10px] font-medium">Agendar</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="text-[10px] font-medium">Histórico</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Perfil</span>
+</a>
+</nav>
+</div>
+</body></html>

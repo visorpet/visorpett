@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&amp;family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4FD1C5", // Soft Teal
+                        "secondary": "#FAF089", // Warm Yellow
+                        "alert-soft": "#FED7D7", // Toned-down red
+                        "success-soft": "#C6F6D5", // Toned-down emerald
+                        "background-light": "#F7FAFC",
+                        "background-dark": "#1A202C",
+                    },
+                    fontFamily: {
+                        "display": ["Poppins", "sans-serif"],
+                        "body": ["Quicksand", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.75rem", "lg": "1.25rem", "xl": "1.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<title>Meu Amigo Peludo - Thor</title>
+<style type="text/tailwindcss">
+        body {
+            min-height: max(884px, 100dvh);
+            font-family: 'Quicksand', sans-serif;
+        }
+        h1, h2, h3, h4, .font-display {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100">
+<div class="relative flex h-auto min-h-screen w-full max-w-md mx-auto flex-col bg-white dark:bg-background-dark overflow-x-hidden shadow-xl">
+<div class="flex items-center bg-white dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10 border-b border-teal-50 dark:border-slate-800">
+<div class="text-teal-600 dark:text-teal-400 flex size-12 shrink-0 items-center justify-start cursor-pointer">
+<span class="material-symbols-outlined">arrow_back</span>
+</div>
+<h2 class="text-slate-800 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center font-display">Meu Amigo Peludo</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex cursor-pointer items-center justify-center rounded-xl h-12 bg-transparent text-slate-400 dark:text-slate-500 p-0">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<div class="flex p-6">
+<div class="flex w-full flex-col gap-4 items-center">
+<div class="flex gap-4 flex-col items-center">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full border-4 border-primary/20 min-h-32 w-32 shadow-md" data-alt="Cachorro Shih Tzu branco e bege olhando para a câmera" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD7vRJuOhIkxg84uG13SnMlWCZ2e17HZ8cCbX39Gc6Tpx_3DyPYMY9E4VRq0lmd_rhZucdm_vP5hGveVcExC29GNiuaZm54FPR55husdihb3in_blVERRh8daI-tIQcm4tQv8y_3V4W3BruYCVnBxgSFZzzwXTfQKfT14XpBdPOozaGnr3QMCPkYEzlWWr-s7e5HncR09qWuXCZN6r5-Ku6csmaKHT_zVePZpwCDe87bhdfy9AJqekiACOlC3p26FBy5sL0yARgAFCM");'></div>
+<div class="flex flex-col items-center justify-center">
+<p class="text-slate-800 dark:text-slate-100 text-3xl font-bold leading-tight font-display">Thor</p>
+<p class="text-slate-500 dark:text-slate-400 text-base font-medium leading-normal text-center">Cão • Shih Tzu • 6kg de puro amor</p>
+<div class="mt-2 flex items-center gap-1.5 text-teal-600 dark:text-teal-400 font-semibold text-sm bg-teal-50 dark:bg-teal-900/20 px-3 py-1 rounded-full">
+<span class="material-symbols-outlined text-sm">favorite</span>
+<p>Tutor(a): Ana Paula</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex gap-3 px-6 pb-6 flex-wrap justify-center">
+<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-alert-soft/40 dark:bg-red-900/20 px-4 border border-alert-soft dark:border-red-900/30">
+<span class="material-symbols-outlined text-red-400 dark:text-red-400 text-lg">error</span>
+<p class="text-red-600 dark:text-red-300 text-xs font-bold leading-normal uppercase tracking-wider">Alergias: Shampoo Neutro</p>
+</div>
+<div class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-success-soft/40 dark:bg-emerald-900/20 px-4 border border-success-soft dark:border-emerald-900/30">
+<span class="material-symbols-outlined text-emerald-500 dark:text-emerald-400 text-lg">mood</span>
+<p class="text-emerald-600 dark:text-emerald-300 text-xs font-bold leading-normal uppercase tracking-wider">Comportamento: Tranquilo</p>
+</div>
+</div>
+<div class="px-4 sticky top-[64px] bg-white dark:bg-background-dark z-10">
+<div class="flex border-b border-slate-100 dark:border-slate-800 justify-between">
+<a class="flex flex-col items-center justify-center border-b-[3px] border-primary text-teal-600 dark:text-teal-400 pb-[13px] pt-4 flex-1" href="#">
+<p class="text-sm font-bold leading-normal font-display">Histórico</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-transparent text-slate-400 dark:text-slate-500 pb-[13px] pt-4 flex-1" href="#">
+<p class="text-sm font-bold leading-normal font-display">Vacinas</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-transparent text-slate-400 dark:text-slate-500 pb-[13px] pt-4 flex-1" href="#">
+<p class="text-sm font-bold leading-normal font-display">Observações</p>
+</a>
+</div>
+</div>
+<div class="flex-1 p-4 flex flex-col gap-4 bg-teal-50/20 dark:bg-transparent">
+<div class="flex flex-col gap-4">
+<div class="flex gap-4 relative">
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-teal-600 dark:text-teal-400 z-10 shadow-sm">
+<span class="material-symbols-outlined">content_cut</span>
+</div>
+<div class="w-0.5 flex-1 bg-teal-100 dark:bg-slate-800 my-1"></div>
+</div>
+<div class="flex-1 pb-6">
+<div class="bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-teal-50 dark:border-slate-800 shadow-sm">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-bold text-slate-800 dark:text-slate-100 font-display">Dia de Beleza e Estilo</h3>
+<span class="text-xs font-bold text-teal-700 dark:text-teal-300 bg-secondary px-2 py-1 rounded-lg">R$ 85,00</span>
+</div>
+<p class="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1 font-medium">
+<span class="material-symbols-outlined text-xs">calendar_today</span> 15/10/2023
+                            </p>
+<p class="text-sm text-slate-600 dark:text-slate-300 mt-2 font-medium">Thor ficou muito cheiroso e feliz! Serviço realizado com sucesso e muito carinho.</p>
+</div>
+</div>
+</div>
+<div class="flex gap-4 relative">
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-teal-600 dark:text-teal-400 z-10 shadow-sm">
+<span class="material-symbols-outlined">vaccines</span>
+</div>
+<div class="w-0.5 flex-1 bg-teal-100 dark:bg-slate-800 my-1"></div>
+</div>
+<div class="flex-1 pb-6">
+<div class="bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-teal-50 dark:border-slate-800 shadow-sm">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-bold text-slate-800 dark:text-slate-100 font-display">Vacina Antirrábica</h3>
+<span class="text-xs font-bold text-teal-700 dark:text-teal-300 bg-secondary px-2 py-1 rounded-lg">R$ 120,00</span>
+</div>
+<p class="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1 font-medium">
+<span class="material-symbols-outlined text-xs">calendar_today</span> 02/09/2023
+                            </p>
+<p class="text-sm text-slate-600 dark:text-slate-300 mt-2 font-medium">Reforço anual aplicado. Lote: VAX-2023-BR. Super corajoso!</p>
+</div>
+</div>
+</div>
+<div class="flex gap-4 relative">
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-teal-600 dark:text-teal-400 z-10 shadow-sm">
+<span class="material-symbols-outlined">medical_services</span>
+</div>
+</div>
+<div class="flex-1">
+<div class="bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-teal-50 dark:border-slate-800 shadow-sm">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-bold text-slate-800 dark:text-slate-100 font-display">Consulta de Rotina</h3>
+<span class="text-xs font-bold text-teal-700 dark:text-teal-300 bg-secondary px-2 py-1 rounded-lg">R$ 150,00</span>
+</div>
+<p class="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1 font-medium">
+<span class="material-symbols-outlined text-xs">calendar_today</span> 10/08/2023
+                            </p>
+<p class="text-sm text-slate-600 dark:text-slate-300 mt-2 font-medium">Check-up geral. Peso estável. Recomendado limpeza de tártaro futura para manter o sorriso lindo.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="p-4 bg-white dark:bg-background-dark border-t border-teal-50 dark:border-slate-800">
+<button class="w-full bg-primary text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-teal-200 dark:shadow-none active:scale-[0.98] transition-transform font-display">
+<span class="material-symbols-outlined">add_circle</span>
+                Novo Agendamento
+            </button>
+</div>
+<div class="flex gap-2 border-t border-slate-50 dark:border-slate-800 bg-white dark:bg-background-dark px-4 pb-6 pt-2">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-300 dark:text-slate-600" href="#">
+<span class="material-symbols-outlined">home</span>
+<p class="text-[10px] font-bold uppercase tracking-tighter">Início</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-teal-500" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">pets</span>
+<p class="text-[10px] font-bold uppercase tracking-tighter">Pets</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-300 dark:text-slate-600" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+<p class="text-[10px] font-bold uppercase tracking-tighter">Agenda</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-300 dark:text-slate-600" href="#">
+<span class="material-symbols-outlined">person</span>
+<p class="text-[10px] font-bold uppercase tracking-tighter">Perfil</p>
+</a>
+</div>
+</div>
+
+</body></html>

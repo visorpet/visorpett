@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0066FF", // Electric Blue accent
+                        "background-light": "#FAFAFA",
+                        "background-dark": "#121212",
+                    },
+                    fontFamily: {
+                        "sans": ["Montserrat", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<title>Perfil do Pet - Thor</title>
+<style type="text/tailwindcss">
+        body {
+            min-height: max(884px, 100dvh);
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'wght' 300;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-sans text-neutral-900 dark:text-neutral-100">
+<div class="relative flex h-auto min-h-screen w-full max-w-md mx-auto flex-col bg-white dark:bg-neutral-900 overflow-x-hidden shadow-2xl border-x border-neutral-100 dark:border-neutral-800">
+<div class="flex items-center bg-white dark:bg-neutral-900 p-4 pb-2 justify-between sticky top-0 z-20 border-b border-neutral-100 dark:border-neutral-800">
+<div class="text-neutral-400 dark:text-neutral-500 flex size-10 shrink-0 items-center justify-start cursor-pointer hover:text-primary transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</div>
+<h2 class="text-neutral-900 dark:text-neutral-100 text-sm font-bold tracking-widest uppercase flex-1 text-center">Perfil do Pet</h2>
+<div class="flex w-10 items-center justify-end">
+<button class="flex cursor-pointer items-center justify-center rounded-xl h-10 bg-transparent text-neutral-400 dark:text-neutral-500 p-0 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+</div>
+<div class="flex p-8">
+<div class="flex w-full flex-col gap-6 items-center">
+<div class="flex gap-4 flex-col items-center">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full border border-neutral-100 dark:border-neutral-800 p-1 min-h-32 w-32 grayscale hover:grayscale-0 transition-all duration-500" data-alt="Cachorro Shih Tzu" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD7vRJuOhIkxg84uG13SnMlWCZ2e17HZ8cCbX39Gc6Tpx_3DyPYMY9E4VRq0lmd_rhZucdm_vP5hGveVcExC29GNiuaZm54FPR55husdihb3in_blVERRh8daI-tIQcm4tQv8y_3V4W3BruYCVnBxgSFZzzwXTfQKfT14XpBdPOozaGnr3QMCPkYEzlWWr-s7e5HncR09qWuXCZN6r5-Ku6csmaKHT_zVePZpwCDe87bhdfy9AJqekiACOlC3p26FBy5sL0yARgAFCM");'></div>
+<div class="flex flex-col items-center justify-center text-center">
+<p class="text-neutral-900 dark:text-neutral-100 text-3xl font-light tracking-tight">Thor</p>
+<p class="text-neutral-400 dark:text-neutral-500 text-xs font-medium tracking-wide mt-1">Cão • Shih Tzu • 6 kg</p>
+<div class="mt-3 flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400 text-[11px] font-semibold uppercase tracking-wider">
+<span class="material-symbols-outlined text-xs">person</span>
+<p>Tutor: Ana Paula</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-2 px-6 pb-8 items-center">
+<div class="flex h-8 w-full max-w-[280px] items-center justify-center gap-x-2 rounded-full bg-neutral-50 dark:bg-neutral-800/50 px-4 border border-red-200/50 dark:border-red-900/30">
+<span class="material-symbols-outlined text-red-500 text-base">error</span>
+<p class="text-neutral-700 dark:text-neutral-300 text-[11px] font-bold uppercase tracking-wider">Alerta: Shampoo Neutro</p>
+</div>
+<div class="flex h-8 w-full max-w-[280px] items-center justify-center gap-x-2 rounded-full bg-neutral-50 dark:bg-neutral-800/50 px-4 border border-neutral-200 dark:border-neutral-700">
+<span class="material-symbols-outlined text-neutral-400 text-base">check_circle</span>
+<p class="text-neutral-500 dark:text-neutral-400 text-[11px] font-bold uppercase tracking-wider">Comportamento: Tranquilo</p>
+</div>
+</div>
+<div class="px-6 sticky top-[53px] bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md z-10">
+<div class="flex border-b border-neutral-100 dark:border-neutral-800">
+<a class="flex flex-col items-center justify-center border-b-2 border-primary text-primary pb-3 pt-4 flex-1 transition-all" href="#">
+<p class="text-[10px] font-bold uppercase tracking-[0.2em]">Histórico</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-neutral-400 dark:text-neutral-500 pb-3 pt-4 flex-1 hover:text-neutral-900 dark:hover:text-neutral-100 transition-all" href="#">
+<p class="text-[10px] font-bold uppercase tracking-[0.2em]">Vacinas</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-2 border-transparent text-neutral-400 dark:text-neutral-500 pb-3 pt-4 flex-1 hover:text-neutral-900 dark:hover:text-neutral-100 transition-all" href="#">
+<p class="text-[10px] font-bold uppercase tracking-[0.2em]">Notas</p>
+</a>
+</div>
+</div>
+<div class="flex-1 p-6 flex flex-col gap-6">
+<div class="flex flex-col gap-6">
+<div class="flex gap-4 relative">
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-400 z-10">
+<span class="material-symbols-outlined text-base">content_cut</span>
+</div>
+<div class="w-px flex-1 bg-neutral-100 dark:bg-neutral-800 my-2"></div>
+</div>
+<div class="flex-1 pb-4">
+<div class="group">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="font-bold text-xs uppercase tracking-wider text-neutral-900 dark:text-neutral-100">Banho &amp; Tosa H.</h3>
+<span class="text-[10px] font-bold text-primary">R$ 85,00</span>
+</div>
+<p class="text-[10px] text-neutral-400 dark:text-neutral-500 mb-2 font-medium">15 OUT 2023</p>
+<p class="text-[11px] text-neutral-600 dark:text-neutral-400 leading-relaxed italic border-l-2 border-neutral-100 dark:border-neutral-800 pl-3">Detalhes: Serviço executado. Pet sem estresse.</p>
+</div>
+</div>
+</div>
+<div class="flex gap-4 relative">
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-400 z-10">
+<span class="material-symbols-outlined text-base">vaccines</span>
+</div>
+<div class="w-px flex-1 bg-neutral-100 dark:bg-neutral-800 my-2"></div>
+</div>
+<div class="flex-1 pb-4">
+<div class="">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="font-bold text-xs uppercase tracking-wider text-neutral-900 dark:text-neutral-100">Antirrábica</h3>
+<span class="text-[10px] font-bold text-primary">R$ 120,00</span>
+</div>
+<p class="text-[10px] text-neutral-400 dark:text-neutral-500 mb-2 font-medium">02 SET 2023</p>
+<p class="text-[11px] text-neutral-600 dark:text-neutral-400 leading-relaxed italic border-l-2 border-neutral-100 dark:border-neutral-800 pl-3">Detalhes: Reforço aplicado. Lote VAX-23.</p>
+</div>
+</div>
+</div>
+<div class="flex gap-4 relative">
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center text-neutral-400 z-10">
+<span class="material-symbols-outlined text-base">medical_services</span>
+</div>
+</div>
+<div class="flex-1">
+<div class="">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="font-bold text-xs uppercase tracking-wider text-neutral-900 dark:text-neutral-100">Check-up Geral</h3>
+<span class="text-[10px] font-bold text-primary">R$ 150,00</span>
+</div>
+<p class="text-[10px] text-neutral-400 dark:text-neutral-500 mb-2 font-medium">10 AGO 2023</p>
+<p class="text-[11px] text-neutral-600 dark:text-neutral-400 leading-relaxed italic border-l-2 border-neutral-100 dark:border-neutral-800 pl-3">Detalhes: Saúde estável. Peso ok.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="p-6 bg-white dark:bg-neutral-900 border-t border-neutral-100 dark:border-neutral-800">
+<button class="w-full bg-primary text-white py-4 rounded-lg font-bold text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 active:opacity-80 transition-opacity">
+<span class="material-symbols-outlined text-lg">add</span>
+                Novo Agendamento
+            </button>
+</div>
+<div class="flex gap-2 border-t border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-6 pb-8 pt-4">
+<a class="flex flex-1 flex-col items-center justify-center gap-1.5 text-neutral-300 dark:text-neutral-600" href="#">
+<span class="material-symbols-outlined text-xl">grid_view</span>
+<p class="text-[9px] font-bold uppercase tracking-widest">Início</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1.5 text-primary" href="#">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1">pets</span>
+<p class="text-[9px] font-bold uppercase tracking-widest">Pets</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1.5 text-neutral-300 dark:text-neutral-600" href="#">
+<span class="material-symbols-outlined text-xl">event</span>
+<p class="text-[9px] font-bold uppercase tracking-widest">Agenda</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1.5 text-neutral-300 dark:text-neutral-600" href="#">
+<span class="material-symbols-outlined text-xl">person</span>
+<p class="text-[9px] font-bold uppercase tracking-widest">Perfil</p>
+</a>
+</div>
+</div>
+
+</body></html>

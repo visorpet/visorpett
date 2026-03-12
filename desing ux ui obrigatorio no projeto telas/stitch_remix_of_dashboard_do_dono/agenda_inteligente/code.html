@@ -1,0 +1,202 @@
+<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Agenda Pet Flow</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b2bab",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#13131f",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Header -->
+<header class="bg-white dark:bg-slate-900 border-b border-primary/10 px-4 py-4 flex items-center justify-between sticky top-0 z-10">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-3xl" style="">pets</span>
+<h1 class="text-xl font-bold tracking-tight" style="">Pet Flow</h1>
+</div>
+<button class="relative p-2 rounded-full hover:bg-primary/10 transition-colors" style="">
+<span class="material-symbols-outlined" style="">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+</button>
+</header>
+<!-- Content Area -->
+<main class="flex-1 overflow-y-auto pb-24">
+<!-- Calendar Header -->
+<div class="bg-white dark:bg-slate-900 p-4 border-b border-primary/10">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-lg font-bold" style="">Outubro 2023</h2>
+<div class="flex gap-1">
+<button class="p-1 hover:bg-primary/10 rounded" style="">
+<span class="material-symbols-outlined" style="">chevron_left</span>
+</button>
+<button class="p-1 hover:bg-primary/10 rounded" style="">
+<span class="material-symbols-outlined" style="">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-7 gap-1 text-center">
+<div class="text-xs font-semibold text-slate-400 uppercase" style="">Dom</div>
+<div class="text-xs font-semibold text-slate-400 uppercase" style="">Seg</div>
+<div class="text-xs font-semibold text-slate-400 uppercase" style="">Ter</div>
+<div class="text-xs font-semibold text-slate-400 uppercase" style="">Qua</div>
+<div class="text-xs font-semibold text-slate-400 uppercase" style="">Qui</div>
+<div class="text-xs font-semibold text-slate-400 uppercase" style="">Sex</div>
+<div class="text-xs font-semibold text-slate-400 uppercase" style="">Sáb</div>
+<!-- Week Row -->
+<button class="p-2 flex flex-col items-center" style="">
+<span class="text-sm font-medium" style="">22</span>
+</button>
+<button class="p-2 flex flex-col items-center" style="">
+<span class="text-sm font-medium" style="">23</span>
+</button>
+<button class="p-2 flex flex-col items-center bg-primary rounded-lg text-white" style="">
+<span class="text-xs opacity-80" style="">Hoje</span>
+<span class="text-sm font-bold" style="">24</span>
+</button>
+<button class="p-2 flex flex-col items-center" style="">
+<span class="text-sm font-medium" style="">25</span>
+</button>
+<button class="p-2 flex flex-col items-center" style="">
+<span class="text-sm font-medium" style="">26</span>
+</button>
+<button class="p-2 flex flex-col items-center" style="">
+<span class="text-sm font-medium" style="">27</span>
+</button>
+<button class="p-2 flex flex-col items-center" style="">
+<span class="text-sm font-medium" style="">28</span>
+</button>
+</div>
+</div>
+<!-- Filters Section -->
+<div class="p-4 flex gap-3 overflow-x-auto no-scrollbar">
+<button class="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-full whitespace-nowrap text-sm font-semibold" style="">
+<span class="material-symbols-outlined text-lg" style="">filter_list</span>
+                Todos Tosadores
+            </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full whitespace-nowrap text-sm font-medium" style="">
+                Ana Silva
+            </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full whitespace-nowrap text-sm font-medium" style="">
+                João Pedro
+            </button>
+</div>
+<!-- Appointment List -->
+<div class="px-4 space-y-3">
+<h3 class="text-slate-500 text-sm font-semibold uppercase tracking-wider mb-2" style="">Compromissos de Hoje</h3>
+<!-- Appointment 1 -->
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-primary/5 shadow-sm flex items-start gap-4">
+<div class="text-center min-w-[50px]">
+<p class="text-sm font-bold text-primary" style="">09:00</p>
+<div class="w-px h-12 bg-slate-100 dark:bg-slate-800 mx-auto my-1"></div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-bold text-lg" style="">Jade&nbsp;<span class="text-sm font-normal text-slate-500" style="">- Buldog</span></h4>
+<span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" style="">Confirmado</span>
+</div>
+<p class="text-slate-600 dark:text-slate-400 text-sm mb-3 flex items-center gap-1" style="">
+<span class="material-symbols-outlined text-base" style="">content_cut</span>
+                        Banho e Tosa Completa
+                    </p>
+<div class="flex items-center gap-2">
+<div class="size-6 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
+<img class="size-full object-cover" data-alt="Female pet groomer profile picture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhAe5AmNdhxQnqPU6NUwLoxhM4MqnIgp5dzRVLf_NL6nQxcTELzLXNJeivwBX6MKcXxmCP1TEE4TvPsh3KRK32a_PfwyboHPACZeIFDXI3zGScSXnbqADg8cQ2KiIb0jU_FR7blg3ZIptPJM5Sfm89fJpVrKeonfYenM3JDi-iTDJPprTUzfsnvxBsIRiVwokfI6GAxLK7670knI7L-uC-4xOTij8UAcZVYhcXprBkUMg9m0X7luQQ24U_cyWBNptp-lnCm2uEx15P" style="">
+</div>
+<span class="text-xs text-slate-500" style="">Tosadora: Ana Silva</span>
+</div>
+</div>
+</div>
+<!-- Appointment 2 -->
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-primary/5 shadow-sm flex items-start gap-4">
+<div class="text-center min-w-[50px]">
+<p class="text-sm font-bold text-slate-400" style="">10:30</p>
+<div class="w-px h-12 bg-slate-100 dark:bg-slate-800 mx-auto my-1"></div>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-bold text-lg" style="">Luna <span class="text-sm font-normal text-slate-500" style="">- Persa</span></h4>
+<span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" style="">Aguardando</span>
+</div>
+<p class="text-slate-600 dark:text-slate-400 text-sm mb-3 flex items-center gap-1" style="">
+<span class="material-symbols-outlined text-base" style="">soap</span>
+                        Apenas Banho
+                    </p>
+<div class="flex items-center gap-2">
+<div class="size-6 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
+<img class="size-full object-cover" data-alt="Male pet groomer profile picture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-XMjStbfr14SUgrMPQGloes8vDFFXVy3oxulvrR1SKQIASD5WjyKgZMMqQ0qVovxMo-z2Y1LZDddrWlAw0CcNgLGZ7loCEKUAl7I7Y3mJuwZYQ0D8LRoHiFd-jG_pgc1c3AFzN1Wd8KJSVrzhzil0Hr2eil7E_vv4zqcClA9nR_i5ySTS-CGMtB-TZHQC-nYLf0Dtt51Ou9xWthEuBD0d6vFU0BD493QWnLBsNFyrwJLTRdpKBTpfw_iujSPEvrh-uX3-GJGdfm5W" style="">
+</div>
+<span class="text-xs text-slate-500" style="">Tosador: João Pedro</span>
+</div>
+</div>
+</div>
+<!-- Appointment 3 -->
+<div class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex items-start gap-4 opacity-80">
+<div class="text-center min-w-[50px]">
+<p class="text-sm font-bold text-slate-400" style="">08:00</p>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-1">
+<h4 class="font-bold text-lg line-through text-slate-400" style="">Bento <span class="text-sm font-normal text-slate-400" style="">- Beagle</span></h4>
+<span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" style="">Concluído</span>
+</div>
+<p class="text-slate-400 text-sm flex items-center gap-1" style="">
+<span class="material-symbols-outlined text-base" style="">health_and_safety</span>
+                        Corte de Unhas
+                    </p>
+</div>
+</div>
+</div>
+</main>
+<!-- FAB -->
+<button class="fixed bottom-24 right-6 size-14 bg-primary text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center transition-transform hover:scale-105 active:scale-95" style="">
+<span class="material-symbols-outlined text-3xl" style="">add</span>
+</button>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-6 py-3 flex justify-between items-center z-20">
+<a class="flex flex-col items-center gap-1 text-primary" href="#" style="">
+<span class="material-symbols-outlined font-variation-settings-fill" style="">calendar_today</span>
+<span class="text-[10px] font-bold" style="">Agenda</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#" style="">
+<span class="material-symbols-outlined" style="">pets</span>
+<span class="text-[10px] font-medium" style="">Pets</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#" style="">
+<span class="material-symbols-outlined" style="">assignment</span>
+<span class="text-[10px] font-medium" style="">Serviços</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500" href="#" style="">
+<span class="material-symbols-outlined" style="">person</span>
+<span class="text-[10px] font-medium" style="">Perfil</span>
+</a>
+</nav>
+</body></html>
