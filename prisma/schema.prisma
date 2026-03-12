@@ -1,0 +1,288 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────
+
+enum UserRole {
+  CLIENTE
+  DONO
+  SUPER_ADMIN
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+  PREMIUM
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELLED
+}
+
+enum AppointmentStatus {
+  agendado
+  confirmado
+  em_atendimento
+  concluido
+  cancelado
+  faltou
+}
+
+enum ServiceType {
+  banho
+  tosa
+  banho_e_tosa
+  consulta
+  vacina
+  outro
+}
+
+// ─── Auth (NextAuth.js) ───────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Usuário Central ──────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  phone         String?
+  role          UserRole  @default(CLIENTE)
+  passwordHash  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  petShop  PetShop?  // DONO
+  pets     Pet[]     // CLIENTE (tutor)
+  groomer  Groomer?  // TOSADOR
+}
+
+// ─── Pet Shop (Tenant) ────────────────────────────────────────
+
+model PetShop {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  logoUrl   String?
+  phone     String?
+  address   String?
+  city      String?
+  state     String?
+  ownerId   String   @unique
+  owner     User     @relation(fields: [ownerId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subscription Subscription?
+  groomers     Groomer[]
+  clients      Client[]
+  appointments Appointment[]
+  services     Service[]
+
+  @@index([slug])
+}
+
+// ─── Assinatura / Plano ───────────────────────────────────────
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  petShopId            String             @unique
+  petShop              PetShop            @relation(fields: [petShopId], references: [id])
+  plan                 SubscriptionPlan   @default(FREE)
+  status               SubscriptionStatus @default(TRIALING)
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  stripePriceId        String?
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+}
+
+// ─── Tosadores ────────────────────────────────────────────────
+
+model Groomer {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  photoUrl  String?
+  petShopId String
+  petShop   PetShop  @relation(fields: [petShopId], references: [id])
+  userId    String?  @unique
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  appointments Appointment[]
+
+  @@index([petShopId])
+}
+
+// ─── Clientes da Loja ─────────────────────────────────────────
+
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String
+  petShopId String
+  petShop   PetShop  @relation(fields: [petShopId], references: [id])
+  userId    String?
+  createdAt DateTime @default(now())
+
+  pets Pet[]
+
+  @@index([petShopId])
+  @@index([phone])
+}
+
+// ─── Pets ─────────────────────────────────────────────────────
+
+model Pet {
+  id        String    @id @default(cuid())
+  name      String
+  species   String
+  breed     String?
+  birthDate DateTime?
+  weight    Float?
+  photoUrl  String?
+  notes     String?
+  clientId  String
+  client    Client    @relation(fields: [clientId], references: [id])
+  ownerId   String?
+  owner     User?     @relation(fields: [ownerId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  appointments Appointment[]
+  vaccines     Vaccine[]
+  medicalNotes MedicalNote[]
+
+  @@index([clientId])
+  @@index([ownerId])
+}
+
+// ─── Vacinas ──────────────────────────────────────────────────
+
+model Vaccine {
+  id        String    @id @default(cuid())
+  petId     String
+  pet       Pet       @relation(fields: [petId], references: [id], onDelete: Cascade)
+  name      String
+  appliedAt DateTime
+  nextDueAt DateTime?
+  vetName   String?
+  createdAt DateTime  @default(now())
+
+  @@index([petId])
+}
+
+// ─── Observações Médicas ──────────────────────────────────────
+
+model MedicalNote {
+  id        String   @id @default(cuid())
+  petId     String
+  pet       Pet      @relation(fields: [petId], references: [id], onDelete: Cascade)
+  note      String   @db.Text
+  author    String
+  createdAt DateTime @default(now())
+
+  @@index([petId])
+}
+
+// ─── Serviços ─────────────────────────────────────────────────
+
+model Service {
+  id          String      @id @default(cuid())
+  petShopId   String
+  petShop     PetShop     @relation(fields: [petShopId], references: [id])
+  type        ServiceType
+  label       String
+  price       Float
+  durationMin Int
+  active      Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+
+  appointments Appointment[]
+
+  @@index([petShopId])
+}
+
+// ─── Agendamentos ─────────────────────────────────────────────
+
+model Appointment {
+  id         String            @id @default(cuid())
+  petId      String
+  pet        Pet               @relation(fields: [petId], references: [id])
+  petShopId  String
+  petShop    PetShop           @relation(fields: [petShopId], references: [id])
+  serviceId  String
+  service    Service           @relation(fields: [serviceId], references: [id])
+  groomerId  String?
+  groomer    Groomer?          @relation(fields: [groomerId], references: [id])
+  date       DateTime
+  status     AppointmentStatus @default(agendado)
+  notes      String?
+  totalPrice Float
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@index([petShopId])
+  @@index([petId])
+  @@index([date])
+  @@index([status])
+}

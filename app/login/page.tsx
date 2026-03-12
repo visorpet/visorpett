@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { MaterialIcon } from "@/components/ui/MaterialIcon";
 
 /**
@@ -16,12 +18,31 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const [errorMsg, setErrorMsg] = useState("");
 
-  function handleEmailLogin(e: React.FormEvent) {
+  async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    // TODO: integrate backend auth
-    setTimeout(() => setLoading(false), 1200);
+    setErrorMsg("");
+
+    const res = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+
+    if (res?.error) {
+      setErrorMsg("E-mail ou senha incorretos.");
+      setLoading(false);
+    } else {
+      router.push("/cliente/inicio"); // O middleware vai redirecionar pro painel correto
+      router.refresh();
+    }
+  }
+
+  function handleGoogleLogin() {
+    signIn("google", { callbackUrl: "/cliente/inicio" });
   }
 
   return (
@@ -51,6 +72,7 @@ export default function LoginPage() {
 
         {/* Google Login */}
         <button
+          onClick={handleGoogleLogin}
           type="button"
           className="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 shadow-card rounded-xl py-3.5 font-semibold text-gray-700 hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 mb-6"
         >
@@ -129,6 +151,12 @@ export default function LoginPage() {
               </button>
             </div>
           </div>
+
+          {errorMsg && (
+            <p className="text-red-500 text-xs font-semibold text-center mt-2 bg-red-50 p-2 rounded-lg">
+              {errorMsg}
+            </p>
+          )}
 
           <div className="flex justify-end">
             <Link
