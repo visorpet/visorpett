@@ -164,7 +164,7 @@ export default function AdminPainelPage() {
                 <ProgressBar value={p.pct} showPercent color={
                   p.plan === "Pro" ? "primary" :
                   p.plan === "Premium" ? "success" :
-                  p.plan === "Enterprise" ? "primary" : "neutral"
+                  p.plan === "Enterprise" ? "primary" : "warning"
                 } size="sm" />
               </div>
             ))}
