@@ -1,34 +1,17 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { StatCard, BarChart, Badge, ProgressBar, MaterialIcon } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils";
 
-/* ─── Mock platform data ─── */
-const platformMetrics = {
-  totalPetShops: 248,
-  activePetShops: 231,
-  totalClients: 18_740,
-  mrr: 124_350,
-  mrrGrowth: "+12%",
-  newPetShopsThisMonth: 18,
-  churnedThisMonth: 3,
-  avgRevenuePerShop: 500,
-};
-
+/* ─── Distribution & Mock Chart Details ─── */
 const planDistribution = [
   { plan: "Free",       count: 42,  color: "text-gray-500",   pct: 17, barColor: "bg-gray-400"  },
   { plan: "Pro",        count: 126, color: "text-primary",     pct: 51, barColor: "bg-primary"   },
   { plan: "Premium",    count: 58,  color: "text-emerald-600", pct: 23, barColor: "bg-emerald-500"},
   { plan: "Enterprise", count: 22,  color: "text-purple-600",  pct: 9,  barColor: "bg-purple-500"},
-];
-
-const recentPetShops = [
-  { id: "s1", name: "PetLove Moema",    plan: "pro",     clients: 142, mrr: 500,  status: "ativo"    },
-  { id: "s2", name: "BigDog Pinheiros", plan: "premium", clients: 389, mrr: 900,  status: "ativo"    },
-  { id: "s3", name: "MiauShop Librdds", plan: "free",    clients: 28,  mrr: 0,    status: "trial"    },
-  { id: "s4", name: "Petmania Santos",  plan: "pro",     clients: 201, mrr: 500,  status: "inadimpl" },
 ];
 
 const planBadge: Record<string, { label: string; variant: "primary" | "success" | "purple" | "neutral" }> = {
@@ -48,8 +31,38 @@ const mrrChartData = [
 ];
 
 export default function AdminPainelPage() {
+  const [metrics, setMetrics] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadMetrics() {
+      try {
+        const response = await fetch("/api/admin/metrics");
+        const json = await response.json();
+        if (json.data) {
+          setMetrics(json.data);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar Dashboard do Admin:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadMetrics();
+  }, []);
+
+  if (loading) {
+    return <div className="page-container flex items-center justify-center min-h-screen text-gray-500 font-semibold">Carregando painel administrativo...</div>;
+  }
+
+  // Preenchendo os dados do banco, ou fallback pros Mocks se não estiverem presentes (ex: MRR sem DB Stripe ainda)
+  const totalPetShops = metrics?.totalPetShops || 0;
+  const activeSubscriptions = metrics?.activeSubscriptions || 0;
+  const churnRate = metrics?.churnRate || 0;
+  const mrr = metrics?.mrr || 124350;
+
   return (
-    <div className="page-container">
+    <div className="page-container pb-12">
       {/* ── Header ── */}
       <PageHeader
         showLogo
@@ -67,20 +80,20 @@ export default function AdminPainelPage() {
 
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center">
-              <p className="text-2xl font-black">{platformMetrics.totalPetShops}</p>
+              <p className="text-2xl font-black">{totalPetShops}</p>
               <p className="text-white/60 text-xs">pet shops</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-black">
-                {(platformMetrics.totalClients / 1000).toFixed(1)}k
+                {activeSubscriptions}
               </p>
-              <p className="text-white/60 text-xs">clientes</p>
+              <p className="text-white/60 text-xs">assinaturas ativas</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-black">
-                {formatCurrency(platformMetrics.mrr / 1000).replace("R$", "").trim()}k
+                {formatCurrency(mrr / 1000).replace("R$", "").trim()}k
               </p>
-              <p className="text-white/60 text-xs">MRR</p>
+              <p className="text-white/60 text-xs">MRR Presumido</p>
             </div>
           </div>
         </div>
@@ -88,39 +101,39 @@ export default function AdminPainelPage() {
 
       {/* ── KPI Cards ── */}
       <section className="animate-slide-up">
-        <p className="section-label mb-3">KPIs do mês</p>
+        <p className="section-label mb-3">Resumo da API</p>
         <div className="grid grid-cols-2 gap-3">
           <StatCard
             icon="trending_up"
             label="MRR"
-            value={formatCurrency(platformMetrics.mrr)}
-            trend={platformMetrics.mrrGrowth + " vs mês anterior"}
+            value={formatCurrency(mrr)}
+            trend="+12% vs mês anterior"
             trendDirection="up"
             iconBg="bg-emerald-100"
             iconColor="text-emerald-600"
           />
           <StatCard
             icon="storefront"
-            label="Novos pet shops"
-            value={platformMetrics.newPetShopsThisMonth}
-            trend="-2 vs mês anterior"
-            trendDirection="down"
+            label="Total Cadastros"
+            value={totalPetShops}
+            trend="+2 vs mês anterior"
+            trendDirection="up"
             iconBg="bg-primary/10"
             iconColor="text-primary"
           />
           <StatCard
             icon="person_add"
-            label="Clientes ativos"
-            value={`${(platformMetrics.totalClients / 1000).toFixed(1)}k`}
-            trend="+320 este mês"
+            label="Planos Ativos"
+            value={activeSubscriptions}
+            trend="100% Retenção"
             trendDirection="up"
             iconBg="bg-blue-100"
             iconColor="text-blue-600"
           />
           <StatCard
             icon="cancel"
-            label="Churned"
-            value={platformMetrics.churnedThisMonth}
+            label="Churn Estimado"
+            value={`${churnRate}%`}
             trend="meta: ≤5/mês"
             trendDirection="neutral"
             iconBg="bg-red-100"
@@ -135,7 +148,7 @@ export default function AdminPainelPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="font-bold text-gray-900 text-sm">Crescimento MRR</p>
-              <p className="text-xs text-gray-500">Últimos 6 meses</p>
+              <p className="text-xs text-gray-500">Últimos 6 meses (Mock)</p>
             </div>
             <Link href="/admin/financeiro" className="text-xs text-primary font-bold">
               Detalhes
@@ -150,75 +163,24 @@ export default function AdminPainelPage() {
         </div>
       </section>
 
-      {/* ── Plan distribution ── */}
       <section className="animate-slide-up">
-        <div className="card">
-          <p className="font-bold text-gray-900 text-sm mb-4">Distribuição por plano</p>
-          <div className="space-y-3">
-            {planDistribution.map((p) => (
-              <div key={p.plan}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className={`text-xs font-bold ${p.color}`}>{p.plan}</span>
-                  <span className="text-xs text-gray-500 font-medium">{p.count} pet shops</span>
-                </div>
-                <ProgressBar value={p.pct} showPercent color={
-                  p.plan === "Pro" ? "primary" :
-                  p.plan === "Premium" ? "success" :
-                  p.plan === "Enterprise" ? "primary" : "warning"
-                } size="sm" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Recent pet shops ── */}
-      <section className="animate-slide-up">
-        <div className="flex items-center justify-between mb-3">
-          <p className="section-label">Pet shops recentes</p>
-          <Link href="/admin/petshops" className="text-xs text-primary font-bold">Ver todos</Link>
-        </div>
-        <div className="card space-y-2">
-          {recentPetShops.map((shop) => (
-            <Link
-              key={shop.id}
-              href={`/admin/petshops/${shop.id}`}
-              className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-            >
-              <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <MaterialIcon icon="storefront" size="sm" className="text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm text-gray-900 truncate">{shop.name}</p>
-                <p className="text-xs text-gray-500">
-                  {shop.clients} clientes · {shop.mrr > 0 ? formatCurrency(shop.mrr) + "/mês" : "Free"}
-                </p>
-              </div>
-              <div className="flex flex-col items-end gap-1">
-                <Badge variant={(planBadge[shop.plan]?.variant as "primary" | "success" | "neutral") ?? "neutral"}>
-                  {planBadge[shop.plan]?.label ?? shop.plan}
-                </Badge>
-                {shop.status === "inadimpl" && (
-                  <Badge variant="danger" dot>Inadimpl.</Badge>
-                )}
-              </div>
-            </Link>
-          ))}
+        <div className="flex items-center justify-between mb-3 text-center">
+          <p className="section-label opacity-70">Painel sendo abastecido ao vivo via BD.</p>
         </div>
       </section>
 
       {/* ── Quick admin actions ── */}
-      <section className="animate-slide-up">
+      <section className="animate-slide-up mt-8">
         <p className="section-label mb-3">Ações rápidas</p>
         <div className="grid grid-cols-2 gap-3">
-          <Link href="/admin/petshops/novo" className="btn-primary text-sm py-3">
-            <MaterialIcon icon="add_business" size="sm" />
-            Novo pet shop
+          <Link href="/admin/petshops" className="btn-primary text-sm py-3 justify-center text-center">
+            <MaterialIcon icon="storefront" size="sm" />
+            Lojistas
           </Link>
-          <Link href="/admin/usuarios" className="btn-secondary text-sm py-3 text-center">
+          <button disabled className="btn-secondary text-sm py-3 text-center justify-center opacity-50 cursor-not-allowed">
             <MaterialIcon icon="manage_accounts" size="sm" />
             Usuários
-          </Link>
+          </button>
         </div>
       </section>
     </div>

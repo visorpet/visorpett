@@ -132,6 +132,7 @@ model PetShop {
   clients      Client[]
   appointments Appointment[]
   services     Service[]
+  messageLogs  MessageLog[]
 
   @@index([slug])
 }
@@ -184,7 +185,8 @@ model Client {
   userId    String?
   createdAt DateTime @default(now())
 
-  pets Pet[]
+  pets         Pet[]
+  messageLogs  MessageLog[]
 
   @@index([petShopId])
   @@index([phone])
@@ -211,6 +213,7 @@ model Pet {
   appointments Appointment[]
   vaccines     Vaccine[]
   medicalNotes MedicalNote[]
+  messageLogs  MessageLog[]
 
   @@index([clientId])
   @@index([ownerId])
@@ -285,4 +288,25 @@ model Appointment {
   @@index([petId])
   @@index([date])
   @@index([status])
+}
+
+// ─── Logs de Mensagens (IA) ───────────────────────────────────
+
+model MessageLog {
+  id        String   @id @default(cuid())
+  petShopId String
+  petShop   PetShop  @relation(fields: [petShopId], references: [id])
+  petId     String
+  pet       Pet      @relation(fields: [petId], references: [id])
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id])
+  type      String   // ex: "return_reminder", "vaccine", "review"
+  prompt    String   @db.Text
+  response  String   @db.Text
+  status    String   @default("sent")
+  createdAt DateTime @default(now())
+
+  @@index([petShopId])
+  @@index([petId])
+  @@index([clientId])
 }

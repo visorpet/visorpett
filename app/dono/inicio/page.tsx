@@ -1,21 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { StatCard, BarChart, Badge, Avatar, MaterialIcon } from "@/components/ui";
-import { formatCurrency, formatDate, formatDateShort } from "@/lib/utils";
-import { mockAppointments } from "@/lib/mocks/appointments";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import type { AppointmentStatus } from "@/types";
 
-/* ─── Mock pet shop ─── */
-const mockPetShop = {
-  id: "shop-001",
-  name: "PetLove Moema",
-  logoUrl: undefined as string | undefined,
-  ownerName: "Roberto Alves",
-};
-
-/* ─── Weekly chart data ─── */
+/* ─── Weekly chart data (Mock for chart visual purposes) ─── */
 const weeklyData = [
   { label: "Seg", value: 8 },
   { label: "Ter", value: 12 },
@@ -37,8 +29,10 @@ const statusConfig: Record<AppointmentStatus, { label: string; variant: "success
 };
 
 /* ─── Appointment row ─── */
-function AppointmentRow({ appointment }: { appointment: typeof mockAppointments[0] }) {
-  const cfg = statusConfig[appointment.status];
+function AppointmentRow({ appointment }: { appointment: any }) {
+  const cfg = statusConfig[appointment.status as AppointmentStatus] || statusConfig["agendado"];
+  const time = new Date(appointment.date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
   return (
     <Link
       href={`/dono/agenda/${appointment.id}`}
@@ -49,22 +43,56 @@ function AppointmentRow({ appointment }: { appointment: typeof mockAppointments[
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between">
-          <p className="font-semibold text-sm text-gray-900 truncate">{appointment.petName}</p>
+          <p className="font-semibold text-sm text-gray-900 truncate">{appointment.pet?.name || "Pet"}</p>
           <Badge variant={cfg.variant} dot>{cfg.label}</Badge>
         </div>
-        <p className="text-xs text-gray-500 truncate">{appointment.serviceLabel} · {appointment.time}</p>
+        <p className="text-xs text-gray-500 truncate">{appointment.service?.label || "Serviço"} · {time}</p>
       </div>
       <p className="text-sm font-bold text-gray-700 flex-shrink-0">
-        {formatCurrency(appointment.price)}
+        {formatCurrency(appointment.totalPrice)}
       </p>
     </Link>
   );
 }
 
 export default function DonoInicioPage() {
-  const today = mockAppointments.filter((a) => a.petShopId === mockPetShop.id);
-  const monthRevenue = today.reduce((s, a) => s + a.price, 0);
-  const inService = today.filter((a) => a.status === "em_atendimento").length;
+  const [petShop, setPetShop] = useState<any>(null);
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadDashboard() {
+      try {
+        const [shopRes, apptRes] = await Promise.all([
+          fetch("/api/petshops/me"),
+          fetch(`/api/appointments?date=${new Date().toISOString().split("T")[0]}`)
+        ]);
+        
+        const shopJson = await shopRes.json();
+        const apptJson = await apptRes.json();
+        
+        if (shopJson.data) setPetShop(shopJson.data);
+        if (apptJson.data) setAppointments(apptJson.data);
+      } catch (error) {
+        console.error("Erro ao carregar Dashboard:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadDashboard();
+  }, []);
+
+  const todayAppointments = appointments;
+  const monthRevenue = todayAppointments.reduce((s, a) => s + (a.totalPrice || 0), 0);
+  const inService = todayAppointments.filter((a) => a.status === "em_atendimento").length;
+
+  if (loading) {
+    return <div className="page-container flex items-center justify-center min-h-screen text-gray-500 font-semibold">Carregando painel...</div>;
+  }
+
+  const shopName = petShop?.name || "Meu PetShop";
+  const shopLogo = petShop?.logoUrl;
+  const ownerName = petShop?.ownerName || "Dono"; // Em produção: pegar da sessão do usuário logado
 
   return (
     <div className="page-container">
@@ -72,7 +100,7 @@ export default function DonoInicioPage() {
       <PageHeader
         showLogo
         rightAction={{ icon: "notifications", label: "Notificações", href: "/dono/notificacoes", badge: 3 }}
-        userAvatar={{ src: mockPetShop.logoUrl, name: mockPetShop.name, href: "/dono/perfil" }}
+        userAvatar={{ src: shopLogo, name: shopName, href: "/dono/perfil" }}
       />
 
       {/* ── Shop banner ── */}
@@ -80,15 +108,15 @@ export default function DonoInicioPage() {
         <div className="bg-gradient-primary rounded-2xl p-5 text-white">
           <div className="flex items-center gap-3 mb-3">
             <Avatar
-              src={mockPetShop.logoUrl}
-              name={mockPetShop.name}
+              src={shopLogo}
+              name={shopName}
               size="md"
               ring
               ringColor="ring-white/30"
             />
             <div className="flex-1">
-              <h2 className="font-bold text-base leading-tight">{mockPetShop.name}</h2>
-              <p className="text-white/70 text-xs">Bem-vindo, {mockPetShop.ownerName.split(" ")[0]}!</p>
+              <h2 className="font-bold text-base leading-tight">{shopName}</h2>
+              <p className="text-white/70 text-xs">Bem-vindo(a)!</p>
             </div>
             <Link href="/dono/agenda" className="btn-secondary bg-white/15 border-0 text-white text-xs py-2 px-3">
               Ver agenda
@@ -107,7 +135,7 @@ export default function DonoInicioPage() {
           <StatCard
             icon="calendar_today"
             label="Agendamentos"
-            value={today.length}
+            value={todayAppointments.length}
             trend="+2 vs ontem"
             trendDirection="up"
             iconBg="bg-primary/10"
@@ -115,7 +143,7 @@ export default function DonoInicioPage() {
           />
           <StatCard
             icon="account_balance_wallet"
-            label="Receita hoje"
+            label="Receita prevista"
             value={formatCurrency(monthRevenue)}
             trend="+R$ 120"
             trendDirection="up"
@@ -132,7 +160,7 @@ export default function DonoInicioPage() {
           <StatCard
             icon="warning"
             label="Reativar clientes"
-            value={3}
+            value={3} // Mock fixado temporariamente
             trend="há 30+ dias"
             trendDirection="down"
             iconBg="bg-red-100"
@@ -161,23 +189,23 @@ export default function DonoInicioPage() {
       {/* ── Today's agenda ── */}
       <section className="animate-slide-up">
         <div className="flex items-center justify-between mb-3">
-          <p className="section-label">Agenda de hoje</p>
+          <p className="section-label">Agenda de hoje (Tempo Real)</p>
           <Link href="/dono/agenda" className="text-xs text-primary font-bold">
             Ver tudo
           </Link>
         </div>
         <div className="card space-y-2">
-          {today.length === 0 ? (
+          {todayAppointments.length === 0 ? (
             <p className="text-center text-gray-400 text-sm py-4">
               Nenhum agendamento para hoje.
             </p>
           ) : (
-            today.map((apt) => <AppointmentRow key={apt.id} appointment={apt} />)
+            todayAppointments.map((apt) => <AppointmentRow key={apt.id} appointment={apt} />)
           )}
         </div>
       </section>
 
-      {/* ── Retorno Automation Section ── */}
+      {/* ── Retorno Automation Section (Mocks mantidos visuais) ── */}
       <section className="animate-slide-up space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold flex items-center gap-2 text-gray-900">
@@ -190,7 +218,6 @@ export default function DonoInicioPage() {
         </div>
 
         <div className="space-y-3">
-          {/* Pet Card 1 */}
           <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
             <div className="flex items-center gap-4">
               <div className="relative">
@@ -213,50 +240,6 @@ export default function DonoInicioPage() {
               <MaterialIcon icon="chat" size="xs" />
               Enviar
             </Link>
-          </div>
-
-          {/* Pet Card 2 */}
-          <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Avatar name="Bela" size="md" />
-              </div>
-              <div>
-                <p className="font-bold text-lg text-gray-900">Bela</p>
-                <div className="flex items-center gap-1 text-red-600">
-                  <MaterialIcon icon="schedule" size="xs" />
-                  <p className="text-sm font-medium leading-none">32 dias sem banho</p>
-                </div>
-              </div>
-            </div>
-            <Link
-              href="https://wa.me/5511999999999"
-              target="_blank"
-              className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all bg-[#25D366] hover:bg-[#20bd5a]"
-            >
-              <MaterialIcon icon="chat" size="xs" />
-              Enviar
-            </Link>
-          </div>
-
-          {/* Pet Card 3 */}
-          <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-100 shadow-sm opacity-80">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Avatar name="Max" size="md" />
-              </div>
-              <div>
-                <p className="font-bold text-lg text-gray-900">Max</p>
-                <div className="flex items-center gap-1 text-gray-500">
-                  <MaterialIcon icon="schedule" size="xs" />
-                  <p className="text-sm font-medium leading-none">15 dias sem banho</p>
-                </div>
-              </div>
-            </div>
-            <button className="flex items-center gap-2 bg-gray-100 text-gray-500 px-4 py-2 rounded-lg text-sm font-semibold cursor-not-allowed">
-              <MaterialIcon icon="check_circle" size="xs" />
-              Agendado
-            </button>
           </div>
         </div>
       </section>
