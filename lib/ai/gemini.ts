@@ -30,7 +30,7 @@ export const geminiService = {
       throw new Error("Chave GEMINI_API_KEY ausente. Configuração necessária.");
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
     // Prompt construído com base nas instruções do PLANO_AUTOMATION_JOBS.md
     const prompt = `Você é o assistente virtual do petshop ${petShopName}.
