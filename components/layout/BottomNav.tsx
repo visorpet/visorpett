@@ -14,10 +14,11 @@ interface NavItem {
 }
 
 const clientNavItems: NavItem[] = [
-  { href: "/cliente/inicio",       label: "Início",       icon: "home" },
-  { href: "/cliente/agendamento",  label: "Agendar",      icon: "calendar_add_on" },
-  { href: "/cliente/meus-pets",    label: "Meus Pets",    icon: "pets" },
-  { href: "/cliente/perfil",       label: "Perfil",       icon: "person" },
+  { href: "/cliente/inicio",      label: "Início",    icon: "home" },
+  { href: "/cliente/agendamento", label: "Agendar",   icon: "calendar_add_on" },
+  { href: "/cliente/historico",   label: "Histórico", icon: "history" },
+  { href: "/cliente/meus-pets",   label: "Meus Pets", icon: "pets" },
+  { href: "/cliente/perfil",      label: "Perfil",    icon: "person" },
 ];
 
 const donoNavItems: NavItem[] = [
