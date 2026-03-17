@@ -1,138 +1,121 @@
 "use client";
 
-import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { MaterialIcon, Avatar, Badge } from "@/components/ui";
-
-const mockUser = {
-  name: "Ana Souza",
-  email: "ana.souza@email.com",
-  phone: "11999998888",
-  photoUrl: undefined as string | undefined,
-  plan: "Pro" as const,
-  memberSince: "Janeiro 2024",
-  referralCode: "ANA2024",
-  referralCount: 3,
-};
-
-interface MenuItemProps {
-  icon: string;
-  label: string;
-  href?: string;
-  badge?: string;
-  danger?: boolean;
-  onClick?: () => void;
-}
-
-function MenuItem({ icon, label, href, badge, danger, onClick }: MenuItemProps) {
-  const content = (
-    <div
-      className={`flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-100 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 ${
-        danger ? "hover:border-red-200" : ""
-      }`}
-    >
-      <div
-        className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
-          danger ? "bg-red-50" : "bg-primary/10"
-        }`}
-      >
-        <MaterialIcon icon={icon} size="sm" className={danger ? "text-red-500" : "text-primary"} />
-      </div>
-      <span className={`flex-1 font-semibold text-sm ${danger ? "text-red-500" : "text-gray-800"}`}>
-        {label}
-      </span>
-      {badge && (
-        <Badge variant="primary" className="text-[10px]">{badge}</Badge>
-      )}
-      {!badge && (
-        <MaterialIcon icon="chevron_right" size="sm" className="text-gray-300" />
-      )}
-    </div>
-  );
-  if (href) return <Link href={href}>{content}</Link>;
-  return <button className="w-full text-left" onClick={onClick || (() => alert("Em breve!"))}>{content}</button>;
-}
+import { Avatar, Badge, MaterialIcon } from "@/components/ui";
+import { cn } from "@/lib/utils";
 
 export default function PerfilPage() {
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  const user = {
+    name: session?.user?.name || "Tutor",
+    email: session?.user?.email || "usuario@email.com",
+    avatar: session?.user?.image,
+    referralCount: 5,
+    joinedDate: "Março 2024"
+  };
+
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: "/login" });
+  };
+
   return (
-    <div className="page-container">
-      <PageHeader title="Meu Perfil" />
+    <div className="page-container font-sans pb-24">
+      <PageHeader 
+        title="Meu Perfil"
+        userAvatar={{ 
+          name: user.name, 
+          src: user.avatar || undefined 
+        }}
+      />
 
-      {/* ── Profile hero ── */}
-      <section className="animate-slide-up">
-        <div className="bg-gradient-primary rounded-2xl p-5 text-white">
-          <div className="flex items-center gap-4">
-            <Avatar
-              src={mockUser.photoUrl}
-              name={mockUser.name}
-              size="lg"
-              ring
-              ringColor="ring-white/40"
-            />
-            <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-black">{mockUser.name}</h1>
-              <p className="text-white/70 text-sm">{mockUser.email}</p>
-              <p className="text-white/70 text-xs mt-1 flex items-center gap-1">
-                <MaterialIcon icon="calendar_today" className="text-[11px]!" />
-                Membro desde {mockUser.memberSince}
-              </p>
-            </div>
-            <div className="flex-shrink-0">
-              <Badge variant="primary" className="bg-white/20 text-white border-0 text-xs">
-                {mockUser.plan}
-              </Badge>
-            </div>
-          </div>
+      {/* ── Perfil Card ── */}
+      <section className="mt-4 animate-slide-up">
+        <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col items-center text-center">
+          <Avatar 
+            src={user.avatar || undefined} 
+            name={user.name} 
+            size="xl" 
+            ring 
+            ringColor="ring-primary/20"
+          />
+          <h2 className="mt-4 text-xl font-black text-gray-900">{user.name}</h2>
+          <p className="text-gray-500 text-sm font-medium">{user.email}</p>
+          <Badge variant="primary" className="mt-3 px-4 py-1 uppercase font-black text-[10px] tracking-widest">
+            Tutor desde {user.joinedDate}
+          </Badge>
+        </div>
+      </section>
 
-          {/* Referral code */}
-          <div className="mt-4 bg-white/15 rounded-xl p-3 flex items-center justify-between">
-            <div>
-              <p className="text-white/60 text-xs mb-0.5">Código de indicação</p>
-              <p className="text-white font-black text-lg tracking-widest">{mockUser.referralCode}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-white/60 text-xs mb-0.5">Indicou</p>
-              <p className="text-white font-black text-lg">{mockUser.referralCount} pets</p>
-            </div>
+      {/* ── Configurações ── */}
+      <section className="mt-8 flex flex-col gap-6">
+        <div>
+          <p className="section-label mb-3 ml-2">Minha Conta</p>
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden divide-y divide-gray-50">
+            <MenuAction icon="person" label="Editar Perfil" onClick={() => {}} />
+            <MenuAction icon="notifications" label="Notificações" onClick={() => router.push("/cliente/notificacoes")} />
+            <MenuAction icon="security" label="Segurança" onClick={() => {}} />
+            <MenuAction icon="credit_card" label="Pagamentos" onClick={() => {}} />
           </div>
         </div>
-      </section>
 
-      {/* ── Menu items ── */}
-      <section className="animate-slide-up">
-        <p className="section-label mb-3">Conta</p>
-        <div className="flex flex-col gap-2">
-          <MenuItem icon="person" label="Editar perfil" />
-          <MenuItem icon="notifications" label="Notificações" />
-          <MenuItem icon="lock" label="Segurança e senha" />
-          <MenuItem icon="credit_card" label="Pagamentos" />
+        <div>
+          <p className="section-label mb-3 ml-2">Pets e Serviços</p>
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden divide-y divide-gray-50">
+            <MenuAction icon="pets" label="Meus Pets" onClick={() => router.push("/cliente/meus-pets")} />
+            <MenuAction icon="history" label="Histórico de Serviços" onClick={() => router.push("/cliente/historico")} />
+            <MenuAction icon="redeem" label="Indicações" badge={`${user.referralCount} indic.`} onClick={() => {}} />
+            <MenuAction icon="star" label="Avaliações" onClick={() => {}} />
+          </div>
+        </div>
+
+        <div>
+          <p className="section-label mb-3 ml-2">Outros</p>
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden divide-y divide-gray-50">
+            <MenuAction icon="help" label="Ajuda e Suporte" onClick={() => {}} />
+            <MenuAction icon="description" label="Termos e Privacidade" onClick={() => {}} />
+            <button 
+              onClick={handleLogout}
+              className="w-full flex items-center justify-between p-4 hover:bg-red-50 transition-colors group"
+            >
+              <div className="flex items-center gap-4 text-red-500 font-bold">
+                <MaterialIcon icon="logout" size="md" />
+                <span>Sair da conta</span>
+              </div>
+              <MaterialIcon icon="chevron_right" size="sm" className="text-red-200 group-hover:text-red-500 transition-colors" />
+            </button>
+          </div>
         </div>
       </section>
-
-      <section className="animate-slide-up">
-        <p className="section-label mb-3">Meus pets e serviços</p>
-        <div className="flex flex-col gap-2">
-          <MenuItem icon="pets" label="Meus pets" href="/cliente/meus-pets" />
-          <MenuItem icon="history" label="Histórico de serviços" href="/cliente/historico" />
-          <MenuItem icon="redeem" label="Programa de indicações" badge={`${mockUser.referralCount} indic.`} />
-          <MenuItem icon="star" label="Avaliações" />
-        </div>
-      </section>
-
-      <section className="animate-slide-up">
-        <p className="section-label mb-3">Suporte</p>
-        <div className="flex flex-col gap-2">
-          <MenuItem icon="help" label="Central de ajuda" />
-          <MenuItem icon="feedback" label="Enviar feedback" />
-          <MenuItem icon="policy" label="Política de privacidade" />
-          <MenuItem icon="logout" label="Sair da conta" danger onClick={() => { if(confirm("Tem certeza que deseja sair?")) { window.location.href="/login"; } }} />
-        </div>
-      </section>
-
-      {/* Version */}
-      <p className="text-center text-xs text-gray-300 pb-4">
-        visorpet v1.0 — feito com 🐾
+      
+      <p className="text-center text-[10px] text-gray-300 font-bold uppercase tracking-widest mt-10">
+        Visorpet App v1.0.4
       </p>
     </div>
+  );
+}
+
+function MenuAction({ icon, label, onClick, badge }: { icon: string; label: string; onClick: () => void; badge?: string }) {
+  return (
+    <button 
+      onClick={onClick}
+      className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors group"
+    >
+      <div className="flex items-center gap-4">
+        <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+          <MaterialIcon icon={icon} size="sm" />
+        </div>
+        <span className="text-gray-700 font-bold text-sm">{label}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        {badge && (
+          <Badge variant="success" className="text-[9px] uppercase font-black px-2">{badge}</Badge>
+        )}
+        <MaterialIcon icon="chevron_right" size="sm" className="text-gray-300 group-hover:text-primary transition-colors" />
+      </div>
+    </button>
   );
 }

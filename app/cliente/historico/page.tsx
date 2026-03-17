@@ -1,13 +1,11 @@
 "use client";
 
-import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MaterialIcon, Badge } from "@/components/ui";
 import { cn, formatDate, formatCurrency } from "@/lib/utils";
-import { mockAppointments } from "@/lib/mocks/appointments";
 import type { AppointmentStatus } from "@/types";
-
-const userId = "user-client-001";
 
 const statusConfig: Record<AppointmentStatus, {
   label: string;
@@ -23,24 +21,65 @@ const statusConfig: Record<AppointmentStatus, {
 };
 
 export default function HistoricoPage() {
-  const myAppointments = mockAppointments
-    .filter((a) => a.ownerId === userId)
-    .sort((a, b) => (a.date < b.date ? 1 : -1));
+  const { data: session } = useSession();
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const upcoming = myAppointments.filter(
-    (a) => a.status === "agendado" || a.status === "confirmado"
+  useEffect(() => {
+    async function fetchAppointments() {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/appointments"); // Reusando API existente que já filtra por clientId se o middleware estiver ok
+        const json = await res.json();
+        if (json.data) {
+          setAppointments(json.data);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar histórico:", err);
+        setError("Não foi possível carregar seu histórico.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchAppointments();
+  }, []);
+
+  const upcoming = appointments.filter(
+    (a) => a.status === "agendado" || a.status === "confirmado" || a.status === "em_atendimento"
   );
-  const past = myAppointments.filter(
+  const past = appointments.filter(
     (a) => a.status === "concluido" || a.status === "cancelado" || a.status === "faltou"
   );
+
+  if (loading) {
+    return (
+      <div className="page-container p-5 animate-pulse min-h-screen flex flex-col gap-6">
+        <div className="w-1/2 h-8 bg-gray-200 rounded-md" />
+        <div className="h-32 rounded-2xl bg-gray-200" />
+        <div className="h-32 rounded-2xl bg-gray-200" />
+      </div>
+    );
+  }
 
   return (
     <div className="page-container">
       <PageHeader
         title="Histórico"
         rightAction={{ icon: "notifications", label: "Notificações" }}
-        userAvatar={{ name: "Ana Souza", href: "/cliente/perfil" }}
+        userAvatar={{ 
+          name: session?.user?.name || "Tutor", 
+          src: session?.user?.image || undefined, 
+          href: "/cliente/perfil" 
+        }}
       />
+
+      {error && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-4 text-sm font-medium border border-red-100 flex gap-2 items-center">
+            <MaterialIcon icon="error_outline" />
+            {error}
+        </div>
+      )}
 
       {/* ── Próximos agendamentos ── */}
       {upcoming.length > 0 && (
@@ -53,10 +92,10 @@ export default function HistoricoPage() {
                 <div key={apt.id} className="bg-white rounded-2xl border border-gray-100 shadow-card p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <p className="font-bold text-gray-900">{apt.serviceLabel}</p>
+                      <p className="font-bold text-gray-900">{apt.service.label}</p>
                       <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                         <MaterialIcon icon="pets" className="text-[12px]!" />
-                        {apt.petName}
+                        {apt.pet.name}
                       </p>
                     </div>
                     <Badge variant={cfg.variant} dot>{cfg.label}</Badge>
@@ -69,16 +108,16 @@ export default function HistoricoPage() {
                     </div>
                     <div className="flex items-center gap-1.5 text-xs text-gray-500">
                       <MaterialIcon icon="schedule" className="text-[13px]!" />
-                      {apt.time}
+                      {apt.date.split('T')[1].substring(0, 5)}
                     </div>
                     <div className="ml-auto font-bold text-primary text-sm">
-                      {formatCurrency(apt.price)}
+                      {formatCurrency(apt.totalPrice)}
                     </div>
                   </div>
 
                   <div className="flex gap-2 pt-2">
                     <Link
-                      href={`https://wa.me/55${apt.ownerPhone}`}
+                      href={`https://wa.me/${apt.petShop.phone || ""}`}
                       target="_blank"
                       className="btn-whatsapp flex-1 text-xs py-2 justify-center"
                     >
@@ -124,13 +163,13 @@ export default function HistoricoPage() {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 text-sm">{apt.serviceLabel}</p>
+                      <p className="font-semibold text-gray-900 text-sm">{apt.service.label}</p>
                       <p className="text-xs text-gray-500">
-                        {apt.petName} · {formatDate(apt.date, { day: "2-digit", month: "2-digit", year: "numeric" })}
+                        {apt.pet.name} · {formatDate(apt.date, { day: "2-digit", month: "2-digit", year: "numeric" })}
                       </p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="font-bold text-gray-900 text-sm">{formatCurrency(apt.price)}</p>
+                      <p className="font-bold text-gray-900 text-sm">{formatCurrency(apt.totalPrice)}</p>
                       <Badge variant={cfg.variant} className="text-[9px] mt-1">{cfg.label}</Badge>
                     </div>
                   </div>
@@ -141,7 +180,7 @@ export default function HistoricoPage() {
         </section>
       )}
 
-      {myAppointments.length === 0 && (
+      {appointments.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
           <MaterialIcon icon="calendar_today" size="xl" className="text-gray-300 mb-4" />
           <p className="font-bold text-gray-500 mb-1">Nenhum agendamento</p>

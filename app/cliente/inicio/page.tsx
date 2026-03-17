@@ -1,20 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Avatar, Badge, ProgressBar, MaterialIcon } from "@/components/ui";
 import { formatCurrency, formatDate, getGreeting, pluralize } from "@/lib/utils";
-import { mockPets } from "@/lib/mocks/pets";
-import { mockAppointments } from "@/lib/mocks/appointments";
 import type { AppointmentStatus } from "@/types";
-
-/* ─── Mock user ─── */
-const mockUser = {
-  id: "user-client-001",
-  name: "Ana Souza",
-  photoUrl: undefined as string | undefined,
-};
 
 /* ─── Status badge mapping ─── */
 const statusBadge: Record<AppointmentStatus, { label: string; variant: "success" | "warning" | "primary" | "neutral" | "danger" | "orange" }> = {
@@ -46,34 +38,89 @@ function QuickAction({ icon, label, href, color = "primary" }: {
 }
 
 export default function ClienteInicioPage() {
+  const { data: session } = useSession();
   const greeting = getGreeting();
-  const pets = mockPets.filter((p) => p.ownerId === mockUser.id);
-  const [selectedPetId, setSelectedPetId] = useState<string>(pets[0]?.id ?? "");
+  
+  const [pets, setPets] = useState<any[]>([]);
+  const [upcomingAppt, setUpcomingAppt] = useState<any>(null);
+  const [totalAppointments, setTotalAppointments] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedPetId, setSelectedPetId] = useState<string>("");
+
+  useEffect(() => {
+    async function loadDashboard() {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/cliente/dashboard");
+        const json = await res.json();
+        
+        if (json.data) {
+          setPets(json.data.pets);
+          setUpcomingAppt(json.data.upcomingAppointment);
+          setTotalAppointments(json.data.totalAppointments);
+          if (json.data.pets.length > 0) {
+            setSelectedPetId(json.data.pets[0].id);
+          }
+        } else if (json.error) {
+          setError(json.error);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar dashboard:", err);
+        setError("Não foi possível carregar os dados.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadDashboard();
+  }, []);
 
   const selectedPet = pets.find((p) => p.id === selectedPetId);
 
-  // Próximo agendamento do usuário
-  const upcomingAppt = mockAppointments.find(
-    (a) => a.ownerId === mockUser.id && a.status !== "concluido" && a.status !== "cancelado"
-  );
+  if (loading) {
+    return (
+      <div className="page-container p-5 animate-pulse min-h-screen flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+          <div className="w-10 h-10 rounded-full bg-gray-200" />
+          <div className="w-32 h-6 rounded-md bg-gray-200" />
+          <div className="w-10 h-10 rounded-full bg-gray-200" />
+        </div>
+        <div className="w-full h-32 rounded-2xl bg-gray-200" />
+        <div className="grid grid-cols-4 gap-2">
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-20 rounded-2xl bg-gray-200" />)}
+        </div>
+        <div className="h-40 rounded-2xl bg-gray-200" />
+      </div>
+    );
+  }
+
+  const userName = session?.user?.name || "Pet Lover";
+  const userPhoto = session?.user?.image;
 
   return (
     <div className="page-container">
       {/* ── Header ── */}
       <PageHeader
         showLogo
-        rightAction={{
-          icon: "notifications",
-          label: "Notificações",
-          href: "/cliente/notificacoes",
-          badge: 2,
+        rightAction={{ 
+          icon: "notifications", 
+          label: "Notificações", 
+          badge: 1,
+          href: "/cliente/notificacoes"
         }}
-        userAvatar={{
-          src: mockUser.photoUrl,
-          name: mockUser.name,
-          href: "/cliente/perfil",
+        userAvatar={{ 
+          name: session?.user?.name || "Tutor", 
+          src: session?.user?.image || undefined,
+          href: "/cliente/perfil" 
         }}
       />
+
+      {error && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-4 text-sm font-medium border border-red-100 flex gap-2 items-center">
+            <MaterialIcon icon="error_outline" />
+            {error}
+        </div>
+      )}
 
       {/* ── Greeting + Summary ── */}
       <section className="px-0 animate-slide-up">
@@ -82,12 +129,12 @@ export default function ClienteInicioPage() {
             <div>
               <p className="text-white/70 text-sm font-medium">{greeting},</p>
               <h2 className="text-xl font-bold">
-                {mockUser.name.split(" ")[0]}! 👋
+                {userName.split(" ")[0]}! 👋
               </h2>
             </div>
             <Avatar
-              src={mockUser.photoUrl}
-              name={mockUser.name}
+              src={userPhoto || undefined}
+              name={userName}
               size="md"
               ring
               ringColor="ring-white/40"
@@ -101,7 +148,7 @@ export default function ClienteInicioPage() {
             </div>
             <div className="w-px h-8 bg-white/20" />
             <div className="text-center">
-              <p className="text-2xl font-black">{mockAppointments.filter((a) => a.ownerId === mockUser.id).length}</p>
+              <p className="text-2xl font-black">{totalAppointments}</p>
               <p className="text-white/70 text-xs">agendamentos</p>
             </div>
             <div className="flex-1 flex justify-end">
@@ -134,9 +181,9 @@ export default function ClienteInicioPage() {
           <div className="card">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <p className="font-bold text-gray-900">{upcomingAppt.serviceLabel}</p>
+                <p className="font-bold text-gray-900">{upcomingAppt.service.label}</p>
                 <p className="text-sm text-gray-500">
-                  {formatDate(upcomingAppt.date)} às {upcomingAppt.time}
+                  {formatDate(upcomingAppt.date)} às {upcomingAppt.date.split('T')[1].substring(0, 5)}
                 </p>
               </div>
               <Badge variant={statusBadge[upcomingAppt.status].variant} dot>
@@ -149,24 +196,24 @@ export default function ClienteInicioPage() {
                 <MaterialIcon icon="pets" size="sm" className="text-primary" fill />
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-gray-900 text-sm">{upcomingAppt.petName}</p>
-                <p className="text-xs text-gray-500 capitalize">{upcomingAppt.petSpecies}</p>
+                <p className="font-semibold text-gray-900 text-sm">{upcomingAppt.pet.name}</p>
+                <p className="text-xs text-gray-500 capitalize">{upcomingAppt.pet.species}</p>
               </div>
               <p className="font-bold text-primary text-sm">
-                {formatCurrency(upcomingAppt.price)}
+                {formatCurrency(upcomingAppt.totalPrice)}
               </p>
             </div>
 
-            {upcomingAppt.groomerName && (
+            {upcomingAppt.groomer && (
               <p className="text-xs text-gray-500 mt-2 text-center">
-                Profissional: <span className="font-semibold text-gray-700">{upcomingAppt.groomerName}</span>
+                Profissional: <span className="font-semibold text-gray-700">{upcomingAppt.groomer.name}</span>
               </p>
             )}
 
             {/* Actions */}
             <div className="flex gap-2 mt-3">
               <Link
-                href={`https://wa.me/55${upcomingAppt.ownerPhone}`}
+                href={`https://wa.me/${upcomingAppt.petShop.phone || ""}`}
                 target="_blank"
                 className="btn-whatsapp flex-1 text-xs py-2"
               >

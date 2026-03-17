@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { MaterialIcon, ProgressBar } from "@/components/ui";
+import { MaterialIcon, Avatar } from "@/components/ui";
 
 type Pet = {
   id: string;
@@ -43,19 +44,26 @@ function PetCard({ pet }: { pet: Pet }) {
 }
 
 export default function MeusPetsPage() {
-  const [pets, setPets] = useState<Pet[]>([]);
+  const { data: session } = useSession();
+  const [pets, setPets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchPets() {
       try {
-        const response = await fetch("/api/pets");
-        const json = await response.json();
+        setLoading(true);
+        setError(null); // Clear previous errors
+        const res = await fetch("/api/pets");
+        const json = await res.json();
         if (json.data) {
           setPets(json.data);
+        } else if (json.error) {
+          setError(json.error);
         }
-      } catch (error) {
-        console.error("Erro ao buscar pets:", error);
+      } catch (err) {
+        console.error("Erro ao carregar pets:", err);
+        setError("Não foi possível carregar seus pets.");
       } finally {
         setLoading(false);
       }
@@ -63,27 +71,52 @@ export default function MeusPetsPage() {
     fetchPets();
   }, []);
 
+  if (loading) {
+    return (
+      <div className="page-container p-5 animate-pulse min-h-screen flex flex-col gap-6">
+        <div className="w-1/2 h-8 bg-gray-200 rounded-md" />
+        <div className="grid grid-cols-2 gap-4">
+          {[1,2,3,4].map(i => <div key={i} className="h-44 rounded-2xl bg-gray-200" />)}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="page-container">
       <PageHeader
         title="Meus Pets"
-        showLogo={false}
-        rightAction={{ icon: "notifications", label: "Notificações", badge: 1 }}
-        userAvatar={{ name: "Tutor", href: "/cliente/perfil" }}
+        rightAction={{
+          icon: "add",
+          label: "Novo Pet",
+          href: "/cliente/meus-pets/novo",
+        }}
+        userAvatar={{ 
+          name: session?.user?.name || "Tutor", 
+          src: session?.user?.image || undefined, 
+          href: "/cliente/perfil" 
+        }}
       />
+
+      {error && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-4 text-sm font-medium border border-red-100 flex gap-2 items-center">
+            <MaterialIcon icon="error_outline" />
+            {error}
+        </div>
+      )}
 
       <section className="animate-slide-up">
         <div className="flex items-center justify-between mb-3">
           <p className="section-label">
-            {loading ? "Carregando..." : `${pets.length} ${pets.length === 1 ? "pet cadastrado" : "pets cadastrados"}`}
+            {pets.length} {pets.length === 1 ? "pet cadastrado" : "pets cadastrados"}
           </p>
         </div>
-        <div className="flex flex-col gap-3">
-          {!loading && pets.length === 0 && (
-            <p className="text-sm text-gray-500 text-center py-4">Você ainda não possui pets cadastrados.</p>
+        <div className="grid grid-cols-2 gap-4">
+          {pets.length === 0 && (
+            <p className="text-sm text-gray-500 text-center py-4 col-span-2">Você ainda não possui pets cadastrados.</p>
           )}
 
-          {!loading && pets.map((pet) => (
+          {pets.map((pet) => (
             <PetCard key={pet.id} pet={pet} />
           ))}
 

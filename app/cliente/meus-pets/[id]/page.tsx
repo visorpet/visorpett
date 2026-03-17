@@ -1,340 +1,246 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { MaterialIcon, Badge, ProgressBar } from "@/components/ui";
-import { cn, formatDate, daysSince } from "@/lib/utils";
-import { mockPets } from "@/lib/mocks/pets";
+import { Avatar, Badge, MaterialIcon, ProgressBar } from "@/components/ui";
+import { cn, formatDate } from "@/lib/utils";
 
-/* ─── Tab definitions ─── */
-type Tab = "historico" | "vacinas" | "observacoes";
+export default function PetProntuarioPage({ params }: { params: { id: string } }) {
+  const { data: session } = useSession();
+  const [pet, setPet] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"historico" | "vacinas" | "obs">("historico");
 
-const tabs: { id: Tab; label: string; icon: string }[] = [
-  { id: "historico", label: "Histórico", icon: "history" },
-  { id: "vacinas", label: "Vacinas", icon: "vaccines" },
-  { id: "observacoes", label: "Observações", icon: "note" },
-];
+  useEffect(() => {
+    async function fetchPet() {
+      try {
+        setLoading(true);
+        const res = await fetch(`/api/pets/${params.id}`);
+        const json = await res.json();
+        if (json.data) {
+          setPet(json.data);
+        } else if (json.error) {
+          setError(json.error);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar prontuário:", err);
+        setError("Não foi possível carregar os dados do pet.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchPet();
+  }, [params.id]);
 
-/* ─── Mock grooming history ─── */
-const groomingHistory = [
-  {
-    id: "gh-001",
-    type: "banho-tosa",
-    label: "Banho + Tosa Completa",
-    date: "2024-03-01",
-    price: 150,
-    note: "Ficou muito cheiroso e feliz! Corte impecável.",
-    groomer: "Carla",
-    icon: "content_cut",
-  },
-  {
-    id: "gh-002",
-    type: "banho",
-    label: "Banho",
-    date: "2024-02-01",
-    price: 50,
-    note: "Serviço realizado com muito carinho.",
-    groomer: "Carla",
-    icon: "bathtub",
-  },
-  {
-    id: "gh-003",
-    type: "consulta",
-    label: "Consulta Veterinária",
-    date: "2024-01-15",
-    price: 180,
-    note: "Check-up geral. Peso estável em 28kg. Recomendado limpeza de tártaro.",
-    groomer: "Dr. Paulo",
-    icon: "medical_services",
-  },
-  {
-    id: "gh-004",
-    type: "vacina",
-    label: "Vacina Antirrábica",
-    date: "2023-08-15",
-    price: 120,
-    note: "Reforço anual aplicado. Lote: VAX-2023-BR.",
-    groomer: "Dr. Paulo",
-    icon: "vaccines",
-  },
-];
-
-/* ─── Allergy / behavior tags ─── */
-const allergyTags = [
-  { label: "Alergia: Shampoo Neutro", icon: "warning", color: "text-red-500 bg-red-50 border-red-200" },
-];
-const behaviorTags = [
-  { label: "Comportamento: Tranquilo", icon: "mood", color: "text-emerald-600 bg-emerald-50 border-emerald-200" },
-];
-
-/* ─── Observation section placeholder ─── */
-const observations = [
-  "Prefere água morna no banho.",
-  "Fica ansioso com secador — usar velocidade baixa.",
-  "Não gostar de ter as patas tocadas — paciência necessária.",
-];
-
-/* ─── HistoryTimeline ─── */
-function HistoryTimeline() {
-  return (
-    <div className="flex flex-col gap-0">
-      {groomingHistory.map((item, idx) => (
-        <div key={item.id} className="flex gap-4 relative">
-          {/* Timeline line + icon */}
-          <div className="flex flex-col items-center">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary z-10 flex-shrink-0">
-              <MaterialIcon icon={item.icon} size="sm" />
-            </div>
-            {idx < groomingHistory.length - 1 && (
-              <div className="w-0.5 flex-1 bg-primary/10 my-1" />
-            )}
-          </div>
-
-          {/* Card */}
-          <div className={cn("flex-1", idx < groomingHistory.length - 1 ? "pb-6" : "")}>
-            <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-card">
-              <div className="flex justify-between items-start mb-1.5">
-                <h3 className="font-bold text-gray-900 text-sm">{item.label}</h3>
-                <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-lg flex-shrink-0 ml-2">
-                  {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(item.price)}
-                </span>
-              </div>
-              <p className="text-xs text-gray-400 flex items-center gap-1 mb-2">
-                <MaterialIcon icon="calendar_today" className="text-[12px]!" />
-                {formatDate(item.date, { day: "2-digit", month: "2-digit", year: "numeric" })}
-                {" · "}
-                <MaterialIcon icon="person" className="text-[12px]!" />
-                {item.groomer}
-              </p>
-              <p className="text-sm text-gray-600 leading-relaxed">{item.note}</p>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ─── VaccineCard ─── */
-function VaccineSection({ vaccines }: { vaccines: NonNullable<typeof mockPets[0]["vaccines"]> }) {
-  return (
-    <div className="flex flex-col gap-3">
-      {vaccines.map((vac) => {
-        const isOk = vac.status === "em_dia";
-        const isExpired = vac.status === "vencida";
-        return (
-          <div
-            key={vac.id}
-            className="bg-white border border-gray-100 rounded-xl p-4 shadow-card"
-          >
-            <div className="flex items-start justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <div
-                  className={cn(
-                    "w-9 h-9 rounded-lg flex items-center justify-center",
-                    isOk ? "bg-green-100" : isExpired ? "bg-red-100" : "bg-amber-100"
-                  )}
-                >
-                  <MaterialIcon
-                    icon="vaccines"
-                    size="sm"
-                    className={cn(
-                      isOk ? "text-green-600" : isExpired ? "text-red-500" : "text-amber-600"
-                    )}
-                  />
-                </div>
-                <div>
-                  <p className="font-bold text-gray-900 text-sm">{vac.name}</p>
-                  <p className="text-xs text-gray-500">{formatDate(vac.date, { day: "2-digit", month: "2-digit", year: "numeric" })}</p>
-                </div>
-              </div>
-              <Badge
-                variant={isOk ? "success" : isExpired ? "danger" : "warning"}
-                dot
-              >
-                {vac.status === "em_dia" ? "Em dia" : vac.status === "vencida" ? "Vencida" : "Próxima"}
-              </Badge>
-            </div>
-            {vac.nextDueDate && (
-              <p className="text-xs text-gray-400 flex items-center gap-1">
-                <MaterialIcon icon="event_upcoming" className="text-[12px]!" />
-                Próxima dose: {formatDate(vac.nextDueDate, { day: "2-digit", month: "2-digit", year: "numeric" })}
-              </p>
-            )}
-          </div>
-        );
-      })}
-
-      {vaccines.length === 0 && (
-        <div className="text-center py-8 text-gray-400">
-          <MaterialIcon icon="vaccines" size="xl" className="mb-2 opacity-40" />
-          <p className="text-sm">Nenhuma vacina registrada</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ─── Main page ─── */
-export default function ProntuarioPage() {
-  const { id } = useParams();
-  const [activeTab, setActiveTab] = useState<Tab>("historico");
-
-  const pet = mockPets.find((p) => p.id === id);
-
-  if (!pet) {
+  if (loading) {
     return (
-      <div className="page-container items-center justify-center">
-        <div className="text-center py-12 text-gray-400">
-          <MaterialIcon icon="pets" size="xl" className="mb-3 opacity-40" />
-          <p className="font-semibold text-gray-500">Pet não encontrado</p>
-          <Link href="/cliente/meus-pets" className="text-primary text-sm font-bold mt-2 inline-block">
-            Voltar para Meus Pets
-          </Link>
+      <div className="page-container p-5 animate-pulse min-h-screen flex flex-col gap-6 font-sans">
+        <div className="w-1/2 h-8 bg-gray-200 rounded-md" />
+        <div className="w-full h-48 bg-gray-200 rounded-2xl" />
+        <div className="flex gap-2">
+           <div className="flex-1 h-10 bg-gray-200 rounded-md" />
+           <div className="flex-1 h-10 bg-gray-200 rounded-md" />
+           <div className="flex-1 h-10 bg-gray-200 rounded-md" />
         </div>
       </div>
     );
   }
 
-  const daysLastBath = pet.lastBath ? daysSince(pet.lastBath) : undefined;
-  const bathWarningLevel =
-    daysLastBath !== undefined
-      ? daysLastBath >= 30 ? "danger"
-      : daysLastBath >= 20 ? "warning"
-      : "success"
-      : undefined;
+  if (error || !pet) {
+    return (
+      <div className="page-container flex flex-col items-center justify-center p-10 text-center font-sans">
+        <MaterialIcon icon="error_outline" size="xl" className="text-red-300 mb-4" />
+        <h2 className="text-lg font-bold text-gray-900">Ops! Algo deu errado.</h2>
+        <p className="text-gray-500 mb-6">{error || "Pet não encontrado."}</p>
+        <Link href="/cliente/meus-pets" className="btn-primary px-6">Voltar</Link>
+      </div>
+    );
+  }
 
-  const speciesIcon = pet.species === "gato" ? "cruelty_free" : "pets";
-  const speciesLabel = pet.species === "cachorro" ? "Cão" : pet.species === "gato" ? "Gato" : pet.species;
+  const age = pet.birthDate 
+    ? (new Date().getFullYear() - new Date(pet.birthDate).getFullYear()) 
+    : 0;
+
+  const history = pet.appointments || [];
+  const vaccines = pet.vaccines || [];
+  const medicalNotes = pet.medicalNotes || [];
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      {/* ── Header ── */}
-      <PageHeader
-        title="Prontuário"
-        showBack
-        backHref="/cliente/meus-pets"
-        rightAction={{ icon: "more_vert", label: "Opções" }}
+    <div className="page-container font-sans">
+      <PageHeader 
+        title="Prontuário" 
+        userAvatar={{ 
+          name: session?.user?.name || "Tutor", 
+          src: session?.user?.image || undefined,
+          href: "/cliente/perfil" 
+        }} 
       />
 
-      {/* ── Pet hero ── */}
-      <div className="flex flex-col items-center gap-3 px-4 pt-6 pb-4 bg-white">
-        {/* Avatar */}
-        <div className="w-32 h-32 bg-primary/10 rounded-full flex items-center justify-center ring-4 ring-primary/20 shadow-primary-sm">
-          <MaterialIcon icon={speciesIcon} size="xl" className="text-primary" fill />
-        </div>
-
-        {/* Name + info */}
-        <div className="text-center">
-          <h1 className="text-3xl font-black text-gray-900">{pet.name}</h1>
-          <p className="text-gray-500 text-base mt-0.5">
-            {speciesLabel}
-            {pet.breed ? ` • ${pet.breed}` : ""}
-            {pet.weight ? ` • ${pet.weight}kg` : ""}
-          </p>
-        </div>
-
-        {/* Tag chips */}
-        <div className="flex flex-wrap gap-2 justify-center">
-          {allergyTags.map((tag) => (
-            <div
-              key={tag.label}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold",
-                tag.color
-              )}
-            >
-              <MaterialIcon icon={tag.icon} className="text-[14px]!" />
-              {tag.label}
-            </div>
-          ))}
-          {behaviorTags.map((tag) => (
-            <div
-              key={tag.label}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold",
-                tag.color
-              )}
-            >
-              <MaterialIcon icon={tag.icon} className="text-[14px]!" />
-              {tag.label}
-            </div>
-          ))}
-        </div>
-
-        {/* Bath progress */}
-        {daysLastBath !== undefined && (
-          <div className="w-full mt-2">
-            <ProgressBar
-              value={Math.min(100, (daysLastBath / 30) * 100)}
-              label="Último banho"
-              sublabel={`${daysLastBath} dias atrás${daysLastBath >= 25 ? " · Hora de agendar!" : ""}`}
-              color={bathWarningLevel}
-              showPercent={false}
-            />
+      {/* ── Pet Hero ── */}
+      <section className="animate-slide-up">
+        <div className="bg-gradient-primary rounded-3xl p-6 text-white shadow-lg overflow-hidden relative">
+          <div className="absolute -right-6 -bottom-6 opacity-10 rotate-12">
+            <MaterialIcon icon="pets" size="xl" className="text-[120px]!" />
           </div>
-        )}
-      </div>
-
-      {/* ── Tabs ── */}
-      <div className="sticky top-14 z-30 bg-white border-b border-gray-100">
-        <div className="flex">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "flex-1 flex flex-col items-center justify-center py-3 border-b-[3px] transition-all duration-200 gap-0.5",
-                activeTab === tab.id
-                  ? "border-primary text-primary"
-                  : "border-transparent text-gray-400 hover:text-gray-600"
-              )}
-              aria-selected={activeTab === tab.id}
-            >
-              <MaterialIcon icon={tab.icon} size="sm" fill={activeTab === tab.id} />
-              <span className="text-xs font-bold">{tab.label}</span>
-            </button>
-          ))}
+          
+          <div className="flex items-center gap-5 relative z-10">
+            <Avatar
+              src={pet.photoUrl || undefined}
+              name={pet.name}
+              size="xl"
+              ring
+              ringColor="ring-white/40"
+            />
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-black tracking-tight">{pet.name}</h1>
+                <Badge variant="success" className="bg-white/20 text-white border-0 text-[10px] py-0 px-2 uppercase font-bold tracking-wider">Ativo</Badge>
+              </div>
+              <p className="text-white/80 text-sm font-medium">{pet.breed || "Sem raça definida"} · {pet.species}</p>
+              
+              <div className="flex gap-6 mt-4">
+                <div>
+                  <p className="text-xl font-black">{age} <span className="text-[10px] font-medium opacity-80 uppercase tracking-widest ml-1">anos</span></p>
+                  <p className="text-white/60 text-[9px] uppercase font-bold tracking-widest">Idade</p>
+                </div>
+                <div className="w-px h-8 bg-white/20 my-auto" />
+                <div>
+                  <p className="text-xl font-black">{pet.weight || "--"} <span className="text-[10px] font-medium opacity-80 uppercase tracking-widest ml-1">kg</span></p>
+                  <p className="text-white/60 text-[9px] uppercase font-bold tracking-widest">Peso</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* ── Tabs navigation ── */}
+      <section className="mt-6">
+        <div className="flex bg-gray-100 p-1 rounded-2xl">
+          <button 
+            onClick={() => setActiveTab("historico")}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300",
+              activeTab === "historico" ? "bg-white text-primary shadow-md transform scale-[1.02]" : "text-gray-500 hover:text-gray-700"
+            )}
+          >
+            <MaterialIcon icon="history" size="sm" />
+            Histórico
+          </button>
+          <button 
+            onClick={() => setActiveTab("vacinas")}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300",
+              activeTab === "vacinas" ? "bg-white text-primary shadow-md transform scale-[1.02]" : "text-gray-500 hover:text-gray-700"
+            )}
+          >
+            <MaterialIcon icon="medical_services" size="sm" />
+            Vacinas
+          </button>
+          <button 
+            onClick={() => setActiveTab("obs")}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300",
+              activeTab === "obs" ? "bg-white text-primary shadow-md transform scale-[1.02]" : "text-gray-500 hover:text-gray-700"
+            )}
+          >
+            <MaterialIcon icon="description" size="sm" />
+            Obs.
+          </button>
+        </div>
+      </section>
 
       {/* ── Tab content ── */}
-      <div className="flex-1 p-4 bg-bg-light">
-        {activeTab === "historico" && <HistoryTimeline />}
-
-        {activeTab === "vacinas" && (
-          <VaccineSection vaccines={pet.vaccines ?? []} />
-        )}
-
-        {activeTab === "observacoes" && (
-          <div className="flex flex-col gap-3">
-            <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-card">
-              <p className="section-label mb-3">Notas do veterinário / tosador</p>
-              <ul className="space-y-2">
-                {observations.map((obs, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                    <MaterialIcon icon="adjust" size="xs" className="text-primary mt-0.5 flex-shrink-0" />
-                    {obs}
-                  </li>
-                ))}
-              </ul>
-            </div>
+      <section className="animate-slide-up mt-6 pb-20">
+        {activeTab === "historico" && (
+          <div className="flex flex-col gap-4">
+            {history.map((item: any) => (
+              <div key={item.id} className="card p-4 flex items-center gap-4 hover:border-primary/30 transition-colors">
+                <div className="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary/10 transition-colors">
+                  <MaterialIcon icon={item.service?.type === 'banho' ? 'bathtub' : 'content_cut'} size="md" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-gray-900 text-base">{item.service?.label || "Serviço"}</p>
+                  <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1.5 font-medium">
+                    <MaterialIcon icon="event" className="text-[14px]!" />
+                    {formatDate(item.date)}
+                    <span className="opacity-30">|</span>
+                    <MaterialIcon icon="person" className="text-[14px]!" />
+                    {item.groomer?.name || "Pet Shop"}
+                  </p>
+                </div>
+                <Badge variant={item.status === 'concluido' ? 'success' : 'primary'} className="text-[10px] uppercase font-black px-2.5">{item.status}</Badge>
+              </div>
+            ))}
+            {history.length === 0 && (
+              <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+                <MaterialIcon icon="history" size="xl" className="text-gray-300 mb-3" />
+                <p className="text-gray-400 text-sm font-medium">Nenhum histórico encontrado.</p>
+              </div>
+            )}
           </div>
         )}
-      </div>
 
-      {/* ── Bottom CTA ── */}
-      <div className="p-4 bg-white border-t border-gray-100">
-        <Link
-          href="/cliente/agendamento"
-          className="btn-primary w-full justify-center"
-        >
-          <MaterialIcon icon="add_circle" size="sm" />
-          Novo Agendamento
-        </Link>
-      </div>
+        {activeTab === "vacinas" && (
+          <div className="flex flex-col gap-4">
+            {vaccines.map((v: any) => (
+              <div key={v.id} className="card p-5 hover:border-blue-200 transition-colors">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500">
+                      <MaterialIcon icon="vaccines" size="sm" />
+                    </div>
+                    <p className="font-bold text-gray-900 text-base">{v.name}</p>
+                  </div>
+                  <Badge variant={v.nextDueAt ? "success" : "neutral"} className="px-3">
+                    {v.nextDueAt ? "Em dia" : "Aplicada"}
+                  </Badge>
+                </div>
+                <div className="flex justify-between text-xs font-medium text-gray-500 pt-3 border-t border-gray-50">
+                  <p className="flex items-center gap-1"><MaterialIcon icon="done_all" className="text-[14px]!" /> Aplicada em: {formatDate(v.appliedAt)}</p>
+                  {v.nextDueAt && <p className="text-primary flex items-center gap-1"><MaterialIcon icon="event" className="text-[14px]!" /> Próxima: {formatDate(v.nextDueAt)}</p>}
+                </div>
+              </div>
+            ))}
+            {vaccines.length === 0 && (
+              <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+                <MaterialIcon icon="vaccines" size="xl" className="text-gray-300 mb-3" />
+                <p className="text-gray-400 text-sm font-medium">Nenhuma vacina registrada.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "obs" && (
+          <div className="flex flex-col gap-4">
+            {medicalNotes.map((note: any) => (
+              <div key={note.id} className="card p-5 bg-amber-50/10 border-amber-100 hover:bg-amber-50/20 transition-colors">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <MaterialIcon icon="account_circle" size="xs" className="text-primary" />
+                    <p className="text-sm font-bold text-primary">{note.author}</p>
+                  </div>
+                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{formatDate(note.createdAt)}</p>
+                </div>
+                <div className="bg-white/50 rounded-2xl p-4 border border-amber-50">
+                   <p className="text-sm text-gray-700 leading-relaxed font-medium italic">
+                    "{note.note}"
+                  </p>
+                </div>
+              </div>
+            ))}
+            {medicalNotes.length === 0 && (
+              <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+                <MaterialIcon icon="description" size="xl" className="text-gray-300 mb-3" />
+                <p className="text-gray-400 text-sm font-medium">Nenhuma observação registrada.</p>
+              </div>
+            )}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
