@@ -41,10 +41,6 @@ export default function LoginPage() {
     }
   }
 
-  function handleGoogleLogin() {
-    signIn("google", { callbackUrl: "/cliente/inicio" });
-  }
-
   return (
     <div className="min-h-screen flex flex-col bg-bg-light">
       {/* Hero gradient top */}
@@ -69,41 +65,6 @@ export default function LoginPage() {
 
       {/* Card */}
       <div className="flex-1 -mt-6 bg-bg-light rounded-t-3xl px-6 pt-8 pb-12">
-
-        {/* Google Login */}
-        <button
-          onClick={handleGoogleLogin}
-          type="button"
-          className="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 shadow-card rounded-xl py-3.5 font-semibold text-gray-700 hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 mb-6"
-        >
-          {/* Google G SVG */}
-          <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
-            <path
-              d="M19.6 10.23c0-.68-.06-1.36-.17-2H10v3.79h5.4a4.62 4.62 0 01-2 3.04v2.52h3.24c1.9-1.75 3-4.32 3-7.35z"
-              fill="#4285F4"
-            />
-            <path
-              d="M10 20c2.7 0 4.97-.9 6.63-2.43l-3.24-2.51c-.9.6-2.05.96-3.39.96-2.6 0-4.81-1.76-5.6-4.13H1.08v2.6A10 10 0 0010 20z"
-              fill="#34A853"
-            />
-            <path
-              d="M4.4 11.89A6.01 6.01 0 014.1 10c0-.66.12-1.3.3-1.89V5.51H1.08A10 10 0 000 10c0 1.61.38 3.14 1.08 4.49l3.32-2.6z"
-              fill="#FBBC05"
-            />
-            <path
-              d="M10 3.98c1.47 0 2.79.5 3.83 1.5L16.7 2.6C14.97.99 12.7 0 10 0A10 10 0 001.08 5.5l3.32 2.6C5.19 5.74 7.4 3.98 10 3.98z"
-              fill="#EA4335"
-            />
-          </svg>
-          Entrar com Google
-        </button>
-
-        {/* Divider */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex-1 h-px bg-gray-200" />
-          <span className="text-xs text-gray-400 font-medium">ou use seu e-mail</span>
-          <div className="flex-1 h-px bg-gray-200" />
-        </div>
 
         {/* Email form */}
         <form onSubmit={handleEmailLogin} className="space-y-4">

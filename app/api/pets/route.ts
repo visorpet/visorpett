@@ -22,7 +22,10 @@ export async function GET(request: Request) {
     let pets;
 
     if (role === "CLIENTE") {
-      // Se for cliente, retorna apenas os pets do cliente logado
+      // Verificando se userId existe para não passar undefined no Prisma
+      if (!userId) {
+         return NextResponse.json({ error: "Sessão inválida" }, { status: 400 });
+      }
       pets = await db.pet.findMany({
         where: { ownerId: userId },
         include: {
@@ -32,7 +35,6 @@ export async function GET(request: Request) {
         orderBy: { createdAt: "desc" },
       });
     } else if (role === "DONO" && petShopId) {
-      // Se for dono, retorna todos os pets dos clientes do pet shop
       pets = await db.pet.findMany({
         where: { client: { petShopId: petShopId } },
         include: {
@@ -41,15 +43,24 @@ export async function GET(request: Request) {
         },
         orderBy: { createdAt: "desc" },
       });
+    } else if (role === "SUPER_ADMIN") {
+      pets = await db.pet.findMany({
+        include: {
+          client: true,
+          owner: true,
+        },
+        take: 50,
+        orderBy: { createdAt: "desc" },
+      });
     } else {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
     }
 
     return NextResponse.json({ data: pets });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching pets:", error);
     return NextResponse.json(
-      { error: "Erro interno", details: error },
+      { error: "Erro interno", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

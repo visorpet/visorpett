@@ -11,13 +11,13 @@ async function main() {
 
   // 1. Super Admin
   const admin = await prisma.user.upsert({
-    where: { email: "admin@visorpet.app" },
+    where: { email: "admin@admin.com" },
     update: {},
     create: {
       name: "Admin Visorpet",
-      email: "admin@visorpet.app",
+      email: "admin@admin.com",
       role: "SUPER_ADMIN",
-      passwordHash,
+      passwordHash: await bcrypt.hash("admin", 10),
     },
   });
 
