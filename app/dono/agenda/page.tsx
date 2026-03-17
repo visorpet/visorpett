@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MaterialIcon, Badge, Avatar } from "@/components/ui";
@@ -48,24 +48,39 @@ const appointments = [
 /* ─── Componentes ─── */
 export default function AgendaPage() {
   const [selectedGroomer, setSelectedGroomer] = useState("Todos Tosadores");
-  const [selectedDay, setSelectedDay] = useState(24); // Exemplo de 'hoje'
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState(() => new Date().getDate());
 
-  const weekDays = [
-    { label: "Dom", value: 22 },
-    { label: "Seg", value: 23 },
-    { label: "Ter", value: 24, isToday: true },
-    { label: "Qua", value: 25 },
-    { label: "Qui", value: 26 },
-    { label: "Sex", value: 27 },
-    { label: "Sáb", value: 28 },
-  ];
+  const weekDays = useMemo(() => {
+    const today = new Date();
+    const curr = new Date(currentDate);
+    const dayOfWeek = curr.getDay(); // 0-6
+    const firstDayOfWeek = new Date(curr);
+    firstDayOfWeek.setDate(curr.getDate() - dayOfWeek);
+    
+    const days = [];
+    const labels = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(firstDayOfWeek);
+        d.setDate(firstDayOfWeek.getDate() + i);
+        days.push({
+           label: labels[i],
+           value: d.getDate(),
+           isToday: d.toDateString() === today.toDateString(),
+        });
+    }
+    return days;
+  }, [currentDate]);
+  
+  const monthName = currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-light pb-24">
       <PageHeader
         title="Pet Flow"
         showLogo={false}
-        rightAction={{ icon: "notifications", label: "Notificações", badge: 1 }}
+        rightAction={{ icon: "notifications", label: "Notificações", href: "/dono/notificacoes", badge: 1 }}
       >
         {/* Usamos absolute/flex para sobrescrever o estilo padrão se necessário ou só deixar padrão */}
       </PageHeader>
@@ -73,12 +88,18 @@ export default function AgendaPage() {
       {/* ── Calendar Header ── */}
       <div className="bg-white border-b border-primary/10 p-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-gray-900">Outubro 2023</h2>
+          <h2 className="text-lg font-bold text-gray-900">{capitalizedMonth}</h2>
           <div className="flex gap-1">
-            <button className="p-1 hover:bg-primary/10 rounded-lg text-gray-500 transition-colors">
+            <button 
+              onClick={() => { const d = new Date(currentDate); d.setDate(d.getDate() - 7); setCurrentDate(d); }}
+              className="p-1 hover:bg-primary/10 rounded-lg text-gray-500 transition-colors"
+            >
               <MaterialIcon icon="chevron_left" size="sm" />
             </button>
-            <button className="p-1 hover:bg-primary/10 rounded-lg text-gray-500 transition-colors">
+            <button 
+              onClick={() => { const d = new Date(currentDate); d.setDate(d.getDate() + 7); setCurrentDate(d); }}
+              className="p-1 hover:bg-primary/10 rounded-lg text-gray-500 transition-colors"
+            >
               <MaterialIcon icon="chevron_right" size="sm" />
             </button>
           </div>
@@ -194,9 +215,12 @@ export default function AgendaPage() {
       </div>
 
       {/* ── FAB Add ── */}
-      <button className="fixed bottom-24 right-5 w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center transition-transform hover:scale-105 active:scale-95 z-40">
+      <Link
+        href="/dono/agenda/novo"
+        className="fixed bottom-24 right-5 w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center transition-transform hover:scale-105 active:scale-95 z-40"
+      >
         <MaterialIcon icon="add" size="lg" />
-      </button>
+      </Link>
     </div>
   );
 }

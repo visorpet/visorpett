@@ -33,6 +33,7 @@ const mrrChartData = [
 export default function AdminPainelPage() {
   const [metrics, setMetrics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadMetrics() {
@@ -44,6 +45,7 @@ export default function AdminPainelPage() {
         }
       } catch (error) {
         console.error("Erro ao carregar Dashboard do Admin:", error);
+        setError("Não foi possível carregar os dados administrativos.");
       } finally {
         setLoading(false);
       }
@@ -52,7 +54,37 @@ export default function AdminPainelPage() {
   }, []);
 
   if (loading) {
-    return <div className="page-container flex items-center justify-center min-h-screen text-gray-500 font-semibold">Carregando painel administrativo...</div>;
+    return (
+      <div className="page-container p-5 animate-pulse min-h-screen flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+            <div className="w-10 h-10 rounded-full bg-gray-200" />
+            <div className="w-32 h-6 rounded-md bg-gray-200" />
+            <div className="w-10 h-10 rounded-full bg-gray-200" />
+        </div>
+        
+        <div className="h-8 w-40 bg-gray-200 rounded-md mt-4" />
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="h-32 rounded-xl bg-gray-200" />
+          <div className="h-32 rounded-xl bg-gray-200" />
+          <div className="h-32 rounded-xl bg-gray-200" />
+          <div className="h-32 rounded-xl bg-gray-200" />
+        </div>
+        
+        <div className="h-64 rounded-xl bg-gray-200 mt-8" />
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="page-container p-6">
+        <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 flex gap-2 items-center">
+            <MaterialIcon icon="error_outline" />
+            {error}
+        </div>
+      </div>
+    );
   }
 
   // Preenchendo os dados do banco, ou fallback pros Mocks se não estiverem presentes (ex: MRR sem DB Stripe ainda)

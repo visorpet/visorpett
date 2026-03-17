@@ -45,6 +45,33 @@ async function main() {
     },
   });
 
+  // Services
+  await prisma.service.upsert({
+    where: { id: "clv1xyz_banho" },
+    update: {},
+    create: {
+      id: "clv1xyz_banho",
+      petShopId: petShop.id,
+      type: "banho",
+      label: "Banho Simples",
+      price: 50,
+      durationMin: 60,
+    }
+  });
+
+  await prisma.service.upsert({
+    where: { id: "clv1xyz_tosa" },
+    update: {},
+    create: {
+      id: "clv1xyz_tosa",
+      petShopId: petShop.id,
+      type: "tosa",
+      label: "Tosa Higiênica",
+      price: 85,
+      durationMin: 90,
+    }
+  });
+
   // 3. Client
   const clientUser = await prisma.user.upsert({
     where: { email: "cliente@email.com" },

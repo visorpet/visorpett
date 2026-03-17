@@ -18,7 +18,7 @@ export default function DonoFinanceiroPage() {
     <div className="page-container">
       <PageHeader
         title="Financeiro"
-        rightAction={{ icon: "download", label: "Relatório" }}
+        rightAction={{ icon: "download", label: "Relatório", onClick: () => alert("Relatório em breve!") }}
       />
 
       <section className="animate-slide-up mb-6">

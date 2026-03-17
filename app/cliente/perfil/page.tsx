@@ -21,9 +21,10 @@ interface MenuItemProps {
   href?: string;
   badge?: string;
   danger?: boolean;
+  onClick?: () => void;
 }
 
-function MenuItem({ icon, label, href, badge, danger }: MenuItemProps) {
+function MenuItem({ icon, label, href, badge, danger, onClick }: MenuItemProps) {
   const content = (
     <div
       className={`flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-100 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 ${
@@ -49,7 +50,7 @@ function MenuItem({ icon, label, href, badge, danger }: MenuItemProps) {
     </div>
   );
   if (href) return <Link href={href}>{content}</Link>;
-  return <button className="w-full text-left">{content}</button>;
+  return <button className="w-full text-left" onClick={onClick || (() => alert("Em breve!"))}>{content}</button>;
 }
 
 export default function PerfilPage() {
@@ -101,10 +102,10 @@ export default function PerfilPage() {
       <section className="animate-slide-up">
         <p className="section-label mb-3">Conta</p>
         <div className="flex flex-col gap-2">
-          <MenuItem icon="person" label="Editar perfil" href="/cliente/perfil/editar" />
-          <MenuItem icon="notifications" label="Notificações" href="/cliente/notificacoes" />
-          <MenuItem icon="lock" label="Segurança e senha" href="/cliente/perfil/seguranca" />
-          <MenuItem icon="credit_card" label="Pagamentos" href="/cliente/perfil/pagamentos" />
+          <MenuItem icon="person" label="Editar perfil" />
+          <MenuItem icon="notifications" label="Notificações" />
+          <MenuItem icon="lock" label="Segurança e senha" />
+          <MenuItem icon="credit_card" label="Pagamentos" />
         </div>
       </section>
 
@@ -113,18 +114,18 @@ export default function PerfilPage() {
         <div className="flex flex-col gap-2">
           <MenuItem icon="pets" label="Meus pets" href="/cliente/meus-pets" />
           <MenuItem icon="history" label="Histórico de serviços" href="/cliente/historico" />
-          <MenuItem icon="redeem" label="Programa de indicações" href="/cliente/indicacoes" badge={`${mockUser.referralCount} indic.`} />
-          <MenuItem icon="star" label="Avaliações" href="/cliente/perfil/avaliacoes" />
+          <MenuItem icon="redeem" label="Programa de indicações" badge={`${mockUser.referralCount} indic.`} />
+          <MenuItem icon="star" label="Avaliações" />
         </div>
       </section>
 
       <section className="animate-slide-up">
         <p className="section-label mb-3">Suporte</p>
         <div className="flex flex-col gap-2">
-          <MenuItem icon="help" label="Central de ajuda" href="/cliente/ajuda" />
-          <MenuItem icon="feedback" label="Enviar feedback" href="/cliente/feedback" />
-          <MenuItem icon="policy" label="Política de privacidade" href="/privacidade" />
-          <MenuItem icon="logout" label="Sair da conta" danger />
+          <MenuItem icon="help" label="Central de ajuda" />
+          <MenuItem icon="feedback" label="Enviar feedback" />
+          <MenuItem icon="policy" label="Política de privacidade" />
+          <MenuItem icon="logout" label="Sair da conta" danger onClick={() => { if(confirm("Tem certeza que deseja sair?")) { window.location.href="/login"; } }} />
         </div>
       </section>
 

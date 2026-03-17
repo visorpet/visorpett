@@ -31,17 +31,8 @@ type FetchedPet = {
 };
 
 /* ─── Mock data for Services & Time (these would eventually come from the Pet Shop API) ─── */
-const mockServices: Service[] = [
-  {
-    id: "cm85jxxxb00021xyzv1", // Simulated CUID to avoid schema error. Naive implementation using actual DB IDs is better, but this works if we mock.
-    // Wait, the backend requires a valid serviceId! I need to either fetch services or mock valid ones.
-    // Let's modify the backend call later or use an actual serviceid. Actually, let's use the DB ids later.
-    // I'll create a dummy service in the backend or fetch them. Since we don't have GET /api/services, we will just pass a hardcoded ID or bypass service check.
-    // Actually, I should use the standard mock CUIDs or fetch from API. We will just use standard ones for now, but backend will fail if it's not in DB.
-    name: "Banho", description: "Higiene completa", price: 50, icon: "bathtub", duration: "1h",
-  },
-  { id: "cm85jxxxc00031xyzv2", name: "Tosa Higiênica", description: "Patinhas e rosto", price: 85, icon: "content_cut", duration: "1h30" },
-];
+// Array original (removido para usar API)
+// const mockServices: Service[] = [...];
 
 const timeSlots: TimeSlot[] = [
   { time: "08:00", available: true },
@@ -151,6 +142,9 @@ export default function AgendamentoPage() {
   const [myPets, setMyPets] = useState<FetchedPet[]>([]);
   const [loadingPets, setLoadingPets] = useState(true);
 
+  const [services, setServices] = useState<Service[]>([]);
+  const [loadingServices, setLoadingServices] = useState(true);
+
   const [selectedPetId, setSelectedPetId] = useState<string>("");
   const [selectedServiceId, setSelectedServiceId] = useState<string>("");
   const [selectedDateIso, setSelectedDateIso] = useState<string>(days.find((d) => !d.isDisabled)?.iso ?? "");
@@ -175,7 +169,31 @@ export default function AgendamentoPage() {
         setLoadingPets(false);
       }
     }
+    
+    async function fetchServices() {
+      try {
+        const res = await fetch("/api/services");
+        const json = await res.json();
+        if (json.data) {
+          const mappedServices = json.data.map((s: any) => ({
+            id: s.id,
+            name: s.label,
+            description: s.type === "banho" ? "Higiene completa" : "Acabamento especial",
+            price: s.price,
+            icon: s.type === "banho" ? "bathtub" : "content_cut",
+            duration: `${s.durationMin} min`,
+          }));
+          setServices(mappedServices);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar serviços:", err);
+      } finally {
+        setLoadingServices(false);
+      }
+    }
+    
     fetchPets();
+    fetchServices();
   }, []);
 
   // Em produção, você deverá listar os serviços na API do Pet Shop. Use o mock com CUIDs falsos com cautela, a API pode quebrar.
@@ -183,7 +201,7 @@ export default function AgendamentoPage() {
   // Para fins demonstração da interface, a chamada via API abaixo pode ser ajustada.
 
   const selectedPet = myPets.find((p) => p.id === selectedPetId);
-  const selectedService = mockServices.find((s) => s.id === selectedServiceId);
+  const selectedService = services.find((s) => s.id === selectedServiceId);
 
   const isReady = !!selectedPetId && !!selectedServiceId && !!selectedDateIso && !!selectedTime;
 
@@ -288,8 +306,12 @@ export default function AgendamentoPage() {
             <div className="w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-xs font-black">2</div>
             <h2 className="text-base font-bold text-gray-900">Selecione o Serviço</h2>
           </div>
-          <div className="flex flex-col gap-3 px-4">
-            {mockServices.map((service) => (
+          <div className="flex flex-col gap-3 max-h-56 overflow-y-auto no-scrollbar scroll-smooth relative">
+            {loadingServices ? (
+              <p className="text-sm text-gray-500 py-2">Carregando serviços...</p>
+            ) : services.length === 0 ? (
+              <p className="text-sm text-gray-500 py-2">Nenhum serviço disponível.</p>
+            ) : services.map((service) => (
               <ServiceCard key={service.id} service={service} isSelected={selectedServiceId === service.id} onClick={() => setSelectedServiceId(service.id)} />
             ))}
           </div>
@@ -347,8 +369,13 @@ export default function AgendamentoPage() {
           </div>
         </div>
 
-        <button onClick={handleConfirm} disabled={!isReady || isSubmitting} className={cn("w-full btn-primary justify-center text-base", !isReady && "opacity-40 cursor-not-allowed hover:translate-y-0")}>
-          {isSubmitting ? "Agendando..." : "Confirmar Agendamento"}
+        <button onClick={handleConfirm} disabled={!isReady || isSubmitting} className={cn("w-full btn-primary justify-center text-base flex items-center gap-2", !isReady && "opacity-40 cursor-not-allowed hover:translate-y-0")}>
+          {isSubmitting ? (
+            <>
+              <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Agendando...
+            </>
+          ) : "Confirmar Agendamento"}
         </button>
       </div>
     </div>

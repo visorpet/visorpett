@@ -32,8 +32,8 @@ const donoNavItems: NavItem[] = [
 const adminNavItems: NavItem[] = [
   { href: "/admin/painel",         label: "Painel",       icon: "dashboard" },
   { href: "/admin/petshops",       label: "Pet Shops",    icon: "storefront" },
-  { href: "/admin/usuarios",       label: "Usuários",     icon: "group" },
-  { href: "/admin/financeiro",     label: "Financeiro",   icon: "account_balance" },
+  // { href: "/admin/usuarios",       label: "Usuários",     icon: "group" },
+  // { href: "/admin/financeiro",     label: "Financeiro",   icon: "account_balance" },
   { href: "/admin/configuracoes",  label: "Config",       icon: "settings" },
 ];
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MaterialIcon, Avatar, Badge } from "@/components/ui";
 
@@ -61,9 +62,12 @@ export default function DonoClientesPage() {
         )}
       </section>
 
-      <button className="fixed bottom-24 right-5 w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center transition-transform hover:scale-105 active:scale-95 z-40">
+      <Link
+        href="/dono/clientes/novo"
+        className="fixed bottom-24 right-5 w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center transition-transform hover:scale-105 active:scale-95 z-40"
+      >
         <MaterialIcon icon="person_add" size="lg" />
-      </button>
+      </Link>
     </div>
   );
 }
