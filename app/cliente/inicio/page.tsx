@@ -187,7 +187,7 @@ export default function ClienteInicioPage() {
                 </p>
               </div>
               <Badge variant={statusBadge[upcomingAppt.status as AppointmentStatus].variant} dot>
-                {statusBadge[upcomingAppt.status as AppointmentStatus].label}
+                {String(statusBadge[upcomingAppt.status as AppointmentStatus].label)}
               </Badge>
             </div>
 
@@ -243,7 +243,7 @@ export default function ClienteInicioPage() {
 
         {/* Pet selector scrollable */}
         <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-          {pets.map((pet) => (
+          {pets.map((pet: any) => (
             <button
               key={pet.id}
               onClick={() => setSelectedPetId(pet.id)}
@@ -301,7 +301,7 @@ export default function ClienteInicioPage() {
               <div>
                 <p className="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Vacinas</p>
                 <div className="space-y-2">
-                  {selectedPet.vaccines.slice(0, 2).map((vac) => (
+                  {selectedPet.vaccines.slice(0, 2).map((vac: any) => (
                     <div key={vac.id} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <MaterialIcon icon="vaccines" size="xs" className="text-gray-400" />
@@ -311,7 +311,7 @@ export default function ClienteInicioPage() {
                         variant={vac.status === "em_dia" ? "success" : vac.status === "vencida" ? "danger" : "warning"}
                         dot
                       >
-                        {vac.status}
+                        {String(vac.status)}
                       </Badge>
                     </div>
                   ))}
