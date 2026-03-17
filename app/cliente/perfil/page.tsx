@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -45,7 +46,7 @@ export default function PerfilPage() {
           <h2 className="mt-4 text-xl font-black text-gray-900">{user.name}</h2>
           <p className="text-gray-500 text-sm font-medium">{user.email}</p>
           <Badge variant="primary" className="mt-3 px-4 py-1 uppercase font-black text-[10px] tracking-widest">
-            Tutor desde {user.joinedDate}
+            {`Tutor desde ${user.joinedDate}`}
           </Badge>
         </div>
       </section>
@@ -112,7 +113,7 @@ function MenuAction({ icon, label, onClick, badge }: { icon: string; label: stri
       </div>
       <div className="flex items-center gap-2">
         {badge && (
-          <Badge variant="success" className="text-[9px] uppercase font-black px-2">{badge}</Badge>
+          <Badge variant="success" className="text-[9px] uppercase font-black px-2">{badge || ""}</Badge>
         )}
         <MaterialIcon icon="chevron_right" size="sm" className="text-gray-300 group-hover:text-primary transition-colors" />
       </div>

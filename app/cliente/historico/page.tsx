@@ -1,15 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MaterialIcon, Badge } from "@/components/ui";
 import { cn, formatDate, formatCurrency } from "@/lib/utils";
 import type { AppointmentStatus } from "@/types";
 
+type BadgeVariant = "primary" | "success" | "warning" | "danger" | "neutral" | "orange" | "purple";
+
 const statusConfig: Record<AppointmentStatus, {
   label: string;
-  variant: "success" | "warning" | "primary" | "neutral" | "danger" | "orange";
+  variant: BadgeVariant;
   icon: string;
 }> = {
   agendado:       { label: "Agendado",       variant: "primary",  icon: "event" },
@@ -30,7 +33,7 @@ export default function HistoricoPage() {
     async function fetchAppointments() {
       try {
         setLoading(true);
-        const res = await fetch("/api/appointments"); // Reusando API existente que já filtra por clientId se o middleware estiver ok
+        const res = await fetch("/api/appointments");
         const json = await res.json();
         if (json.data) {
           setAppointments(json.data);
@@ -46,10 +49,10 @@ export default function HistoricoPage() {
   }, []);
 
   const upcoming = appointments.filter(
-    (a) => a.status === "agendado" || a.status === "confirmado" || a.status === "em_atendimento"
+    (a: any) => a.status === "agendado" || a.status === "confirmado" || a.status === "em_atendimento"
   );
   const past = appointments.filter(
-    (a) => a.status === "concluido" || a.status === "cancelado" || a.status === "faltou"
+    (a: any) => a.status === "concluido" || a.status === "cancelado" || a.status === "faltou"
   );
 
   if (loading) {
@@ -66,7 +69,7 @@ export default function HistoricoPage() {
     <div className="page-container">
       <PageHeader
         title="Histórico"
-        rightAction={{ icon: "notifications", label: "Notificações" }}
+        rightAction={{ icon: "notifications", label: "Notificações", href: "/cliente/notificacoes" }}
         userAvatar={{ 
           name: session?.user?.name || "Tutor", 
           src: session?.user?.image || undefined, 
@@ -86,16 +89,16 @@ export default function HistoricoPage() {
         <section className="animate-slide-up">
           <p className="section-label mb-3">Próximos</p>
           <div className="flex flex-col gap-3">
-            {upcoming.map((apt) => {
-              const cfg = statusConfig[apt.status];
+            {upcoming.map((apt: any) => {
+              const cfg = statusConfig[apt.status as AppointmentStatus];
               return (
                 <div key={apt.id} className="bg-white rounded-2xl border border-gray-100 shadow-card p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <p className="font-bold text-gray-900">{apt.service.label}</p>
+                      <p className="font-bold text-gray-900">{apt.service?.label || "Serviço"}</p>
                       <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                         <MaterialIcon icon="pets" className="text-[12px]!" />
-                        {apt.pet.name}
+                        {apt.pet?.name || "Pet"}
                       </p>
                     </div>
                     <Badge variant={cfg.variant} dot>{cfg.label}</Badge>
@@ -108,7 +111,7 @@ export default function HistoricoPage() {
                     </div>
                     <div className="flex items-center gap-1.5 text-xs text-gray-500">
                       <MaterialIcon icon="schedule" className="text-[13px]!" />
-                      {apt.date.split('T')[1].substring(0, 5)}
+                      {apt.date.split('T')[1]?.substring(0, 5) || "00:00"}
                     </div>
                     <div className="ml-auto font-bold text-primary text-sm">
                       {formatCurrency(apt.totalPrice)}
@@ -117,7 +120,7 @@ export default function HistoricoPage() {
 
                   <div className="flex gap-2 pt-2">
                     <Link
-                      href={`https://wa.me/${apt.petShop.phone || ""}`}
+                      href={`https://wa.me/${apt.petShop?.phone || ""}`}
                       target="_blank"
                       className="btn-whatsapp flex-1 text-xs py-2 justify-center"
                     >
@@ -144,8 +147,8 @@ export default function HistoricoPage() {
         <section className="animate-slide-up">
           <p className="section-label mb-3">Anteriores</p>
           <div className="flex flex-col gap-2">
-            {past.map((apt) => {
-              const cfg = statusConfig[apt.status];
+            {past.map((apt: any) => {
+              const cfg = statusConfig[apt.status as AppointmentStatus];
               return (
                 <div
                   key={apt.id}
@@ -163,9 +166,9 @@ export default function HistoricoPage() {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 text-sm">{apt.service.label}</p>
+                      <p className="font-semibold text-gray-900 text-sm">{apt.service?.label || "Serviço"}</p>
                       <p className="text-xs text-gray-500">
-                        {apt.pet.name} · {formatDate(apt.date, { day: "2-digit", month: "2-digit", year: "numeric" })}
+                        {apt.pet?.name || "Pet"} · {formatDate(apt.date, { day: "2-digit", month: "2-digit", year: "numeric" })}
                       </p>
                     </div>
                     <div className="text-right flex-shrink-0">
@@ -180,7 +183,7 @@ export default function HistoricoPage() {
         </section>
       )}
 
-      {appointments.length === 0 && (
+      {appointments.length === 0 && !loading && (
         <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
           <MaterialIcon icon="calendar_today" size="xl" className="text-gray-300 mb-4" />
           <p className="font-bold text-gray-500 mb-1">Nenhum agendamento</p>

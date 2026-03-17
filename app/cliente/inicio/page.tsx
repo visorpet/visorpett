@@ -186,8 +186,8 @@ export default function ClienteInicioPage() {
                   {formatDate(upcomingAppt.date)} às {upcomingAppt.date.split('T')[1].substring(0, 5)}
                 </p>
               </div>
-              <Badge variant={statusBadge[upcomingAppt.status].variant} dot>
-                {statusBadge[upcomingAppt.status].label}
+              <Badge variant={statusBadge[upcomingAppt.status as AppointmentStatus].variant} dot>
+                {statusBadge[upcomingAppt.status as AppointmentStatus].label}
               </Badge>
             </div>
 
