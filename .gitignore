@@ -1,5 +1,9 @@
 
 
+# Next.js build output
+.next/
+out/
+
 # Environment & Secrets (AIOX)
 .env
 .env.local

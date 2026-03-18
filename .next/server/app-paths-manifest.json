@@ -1,8 +1,0 @@
-{
-  "/api/cron/generate-reminders/route": "app/api/cron/generate-reminders/route.js",
-  "/cliente/perfil/page": "app/cliente/perfil/page.js",
-  "/login/page": "app/login/page.js",
-  "/cliente/historico/page": "app/cliente/historico/page.js",
-  "/cliente/inicio/page": "app/cliente/inicio/page.js",
-  "/cliente/agendamento/page": "app/cliente/agendamento/page.js"
-}
