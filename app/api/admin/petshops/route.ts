@@ -17,7 +17,7 @@ export async function GET() {
 
     const { data: shops, error } = await db
       .from("PetShop")
-      .select("id, name, city, state, createdAt, owner:User!ownerId(name,email), subscription:Subscription!petShopId(plan,status)")
+      .select("id, name, city, state, createdAt, ownerId, subscription:Subscription!petShopId(plan,status)")
       .order("createdAt", { ascending: false });
 
     if (error) throw error;
@@ -42,8 +42,16 @@ export async function GET() {
       appointmentCount[r.petShopId] = (appointmentCount[r.petShopId] ?? 0) + 1;
     });
 
+    // Busca owner via auth.admin para não depender da tabela User pública
+    const { data: authData } = await db.auth.admin.listUsers();
+    const authUsers: Record<string, { name?: string; email?: string }> = {};
+    (authData?.users ?? []).forEach((u: any) => {
+      authUsers[u.id] = { name: u.user_metadata?.name ?? u.email, email: u.email };
+    });
+
     const result = (shops ?? []).map((s: any) => ({
       ...s,
+      owner: authUsers[s.ownerId] ?? null,
       _count: {
         clients: clientCount[s.id] ?? 0,
         appointments: appointmentCount[s.id] ?? 0,

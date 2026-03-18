@@ -21,19 +21,26 @@ export async function GET() {
     if (role === "CLIENTE") {
       query = db
         .from("Pet")
-        .select("*, client:Client!clientId(*), vaccines:Vaccine!petId(*)")
+        .select("*, vaccines:Vaccine!petId(*)")
         .eq("ownerId", userId)
         .order("createdAt", { ascending: false });
     } else if (role === "DONO" && petShopId) {
+      // Busca pets cujos clientes pertencem ao pet shop
+      const { data: clients } = await db
+        .from("Client")
+        .select("id")
+        .eq("petShopId", petShopId);
+      const clientIds = (clients ?? []).map((c: { id: string }) => c.id);
+      if (clientIds.length === 0) return NextResponse.json({ data: [] });
       query = db
         .from("Pet")
-        .select("*, client:Client!clientId(*), owner:User!ownerId(id,name,email)")
-        .eq("client.petShopId", petShopId)
+        .select("*, client:Client!clientId(*)")
+        .in("clientId", clientIds)
         .order("createdAt", { ascending: false });
     } else if (role === "SUPER_ADMIN") {
       query = db
         .from("Pet")
-        .select("*, client:Client!clientId(*), owner:User!ownerId(id,name,email)")
+        .select("*, client:Client!clientId(*)")
         .order("createdAt", { ascending: false })
         .limit(50);
     } else {
