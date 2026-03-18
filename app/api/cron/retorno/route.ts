@@ -35,7 +35,7 @@ export async function GET(request: Request) {
     // Simulando o envio de WhatsApp via Evolution API ou Email via Resend
     let sentCount = 0;
     for (const pet of pets) {
-      if (pet.client.phone) {
+      if (pet.client?.phone) {
         // Envio: await sendWhatsApp(pet.client.phone, `Olá ${pet.client.name}, está na hora do banho do ${pet.name}!`);
         sentCount++;
       }
