@@ -5,11 +5,10 @@ import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
-const serviceSchema = z.object({
-  type:        z.enum(["banho", "tosa", "banho_e_tosa", "consulta", "vacina", "outro"]),
-  label:       z.string().min(2, "Nome obrigatório"),
-  price:       z.number().positive("Preço deve ser positivo"),
-  durationMin: z.number().int().positive("Duração obrigatória"),
+const groomerSchema = z.object({
+  name:     z.string().min(2, "Nome obrigatório"),
+  phone:    z.string().optional(),
+  photoUrl: z.string().url().optional().or(z.literal("")),
 });
 
 export async function GET(request: Request) {
@@ -18,13 +17,13 @@ export async function GET(request: Request) {
     const petShopId = searchParams.get("petShopId");
 
     const db = createAdminClient();
-    let query = db.from("Service").select("*").eq("active", true);
+    let query = db.from("Groomer").select("id, name, phone, photoUrl, petShopId");
     if (petShopId) query = query.eq("petShopId", petShopId);
 
-    const { data: services } = await query;
-    return NextResponse.json({ data: services ?? [] });
+    const { data } = await query;
+    return NextResponse.json({ data: data ?? [] });
   } catch (error) {
-    console.error("Error fetching services:", error);
+    console.error("Error fetching groomers:", error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }
@@ -41,21 +40,19 @@ export async function POST(request: Request) {
     if (!petShopId) return NextResponse.json({ error: "Pet shop não encontrado" }, { status: 404 });
 
     const body = await request.json();
-    const parsed = serviceSchema.parse(body);
+    const parsed = groomerSchema.parse(body);
 
     const db = createAdminClient();
     const now = new Date().toISOString();
     const { data, error } = await db
-      .from("Service")
+      .from("Groomer")
       .insert({
-        id:          crypto.randomUUID(),
+        id:        crypto.randomUUID(),
         petShopId,
-        type:        parsed.type,
-        label:       parsed.label,
-        price:       parsed.price,
-        durationMin: parsed.durationMin,
-        active:      true,
-        createdAt:   now,
+        name:      parsed.name,
+        phone:     parsed.phone ?? null,
+        photoUrl:  parsed.photoUrl || null,
+        createdAt: now,
       })
       .select()
       .single();
@@ -66,7 +63,7 @@ export async function POST(request: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "Erro de validação", details: error.issues }, { status: 400 });
     }
-    console.error("Error creating service:", error);
+    console.error("Error creating groomer:", error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }

@@ -25,7 +25,7 @@ const donoNavItems: NavItem[] = [
   { href: "/dono/inicio",          label: "Início",       icon: "home" },
   { href: "/dono/agenda",          label: "Agenda",       icon: "calendar_view_week" },
   { href: "/dono/clientes",        label: "Clientes",     icon: "group" },
-  { href: "/dono/financeiro",      label: "Financeiro",   icon: "account_balance_wallet" },
+  { href: "/dono/servicos",        label: "Serviços",     icon: "content_cut" },
   { href: "/dono/perfil",          label: "Perfil",       icon: "storefront" },
 ];
 
