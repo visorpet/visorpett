@@ -14,26 +14,25 @@ export type AppSession = {
 
 /**
  * Retorna a sessão do usuário autenticado via Supabase.
- * Substitui `getServerSession(authOptions)` do NextAuth em todas as API routes.
+ * Usa user_metadata como fonte de verdade (não depende do Prisma para auth).
+ * Só usa o DB para petShopId (DONO users).
  */
 export async function getSession(): Promise<AppSession | null> {
   try {
     const supabase = createClient();
     const {
       data: { user },
+      error,
     } = await supabase.auth.getUser();
 
-    if (!user) return null;
+    if (error || !user) return null;
 
-    const dbUser = await db.user.findUnique({
-      where: { id: user.id },
-      select: { id: true, name: true, email: true, image: true, role: true },
-    });
-
-    if (!dbUser) return null;
+    const role = (user.user_metadata?.role as string) ?? "CLIENTE";
+    const name = (user.user_metadata?.name as string) ?? user.email ?? null;
 
     let petShopId: string | null = null;
-    if (dbUser.role === "DONO") {
+
+    if (role === "DONO") {
       try {
         const petShop = await db.petShop.findUnique({
           where: { ownerId: user.id },
@@ -41,17 +40,18 @@ export async function getSession(): Promise<AppSession | null> {
         });
         petShopId = petShop?.id ?? null;
       } catch {
+        // DB indisponível — DONO sem petShopId
         petShopId = null;
       }
     }
 
     return {
       user: {
-        id: dbUser.id,
-        name: dbUser.name,
-        email: dbUser.email,
-        image: dbUser.image,
-        role: dbUser.role,
+        id: user.id,
+        name,
+        email: user.email ?? null,
+        image: user.user_metadata?.avatar_url ?? null,
+        role,
         petShopId,
       },
     };
