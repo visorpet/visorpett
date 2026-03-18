@@ -85,6 +85,7 @@ export async function POST(request: Request) {
         notes: parsedData.notes ?? null,
         clientId: parsedData.clientId ?? null,
         ownerId: role === "CLIENTE" ? userId : null,
+        updatedAt: new Date().toISOString(),
       })
       .select()
       .single();

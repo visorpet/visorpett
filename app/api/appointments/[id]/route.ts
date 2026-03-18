@@ -34,7 +34,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
     const { data: updatedAppointment, error } = await db
       .from("Appointment")
-      .update({ status: parsedData.status })
+      .update({ status: parsedData.status, updatedAt: new Date().toISOString() })
       .eq("id", params.id)
       .select()
       .single();

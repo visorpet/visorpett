@@ -61,7 +61,7 @@ export async function PUT(request: Request) {
     const db = createAdminClient();
     const { data: petShop, error } = await db
       .from("PetShop")
-      .update(parsedData)
+      .update({ ...parsedData, updatedAt: new Date().toISOString() })
       .eq("id", petShopId)
       .select()
       .single();

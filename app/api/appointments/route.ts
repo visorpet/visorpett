@@ -117,6 +117,7 @@ export async function POST(request: Request) {
         notes: parsedData.notes ?? null,
         totalPrice: service.price,
         status: "agendado",
+        updatedAt: new Date().toISOString(),
       })
       .select()
       .single();
