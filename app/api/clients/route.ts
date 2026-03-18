@@ -78,6 +78,7 @@ export async function POST(request: Request) {
     const { data: newClient, error } = await db
       .from("Client")
       .insert({
+        id: crypto.randomUUID(),
         name: parsedData.name,
         email: parsedData.email ?? null,
         phone: parsedData.phone ?? null,

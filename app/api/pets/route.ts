@@ -69,6 +69,7 @@ export async function POST(request: Request) {
     const { data: pet, error } = await db
       .from("Pet")
       .insert({
+        id: crypto.randomUUID(),
         name: parsedData.name,
         species: parsedData.species,
         breed: parsedData.breed ?? null,

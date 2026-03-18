@@ -108,6 +108,7 @@ export async function POST(request: Request) {
     const { data: appointment, error } = await db
       .from("Appointment")
       .insert({
+        id: crypto.randomUUID(),
         petId: parsedData.petId,
         petShopId: parsedData.petShopId,
         serviceId: parsedData.serviceId,
