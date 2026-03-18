@@ -47,7 +47,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     const { data: existingPet } = await db
       .from("Pet")
-      .select("id, ownerId, client:Client!clientId(petShopId)")
+      .select("id, ownerId, clientId")
       .eq("id", params.id)
       .maybeSingle();
 
@@ -56,8 +56,15 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     if (role === "CLIENTE" && existingPet.ownerId !== userId) {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
     }
-    if (role === "DONO" && existingPet.client?.petShopId !== petShopId) {
-      return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+    if (role === "DONO" && existingPet.clientId) {
+      const { data: client } = await db
+        .from("Client")
+        .select("petShopId")
+        .eq("id", existingPet.clientId)
+        .maybeSingle();
+      if (client?.petShopId !== petShopId) {
+        return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+      }
     }
 
     const body = await request.json();
@@ -99,7 +106,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
     const { data: existingPet } = await db
       .from("Pet")
-      .select("id, ownerId, client:Client!clientId(petShopId)")
+      .select("id, ownerId, clientId")
       .eq("id", params.id)
       .maybeSingle();
 
@@ -108,8 +115,15 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     if (role === "CLIENTE" && existingPet.ownerId !== userId) {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
     }
-    if (role === "DONO" && existingPet.client?.petShopId !== petShopId) {
-      return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+    if (role === "DONO" && existingPet.clientId) {
+      const { data: client } = await db
+        .from("Client")
+        .select("petShopId")
+        .eq("id", existingPet.clientId)
+        .maybeSingle();
+      if (client?.petShopId !== petShopId) {
+        return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
+      }
     }
 
     const { error } = await db.from("Pet").delete().eq("id", params.id);
