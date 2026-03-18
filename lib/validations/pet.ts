@@ -7,7 +7,7 @@ export const petSchema = z.object({
   birthDate: z.string().optional(),
   weight: z.number().positive().optional(),
   notes: z.string().optional(),
-  clientId: z.string().cuid("Cliente inválido").optional(),
+  clientId: z.string().uuid("Cliente inválido").optional(),
 });
 
 export const updatePetSchema = petSchema.partial();
