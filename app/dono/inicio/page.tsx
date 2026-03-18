@@ -4,19 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { StatCard, BarChart, Badge, Avatar, MaterialIcon } from "@/components/ui";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import type { AppointmentStatus } from "@/types";
-
-/* ─── Weekly chart data (Mock for chart visual purposes) ─── */
-const weeklyData = [
-  { label: "Seg", value: 8 },
-  { label: "Ter", value: 12 },
-  { label: "Qua", value: 6 },
-  { label: "Qui", value: 15, isHighlight: true },
-  { label: "Sex", value: 10, isCurrent: true },
-  { label: "Sáb", value: 18 },
-  { label: "Dom", value: 4 },
-];
 
 /* ─── Status config ─── */
 const statusConfig: Record<AppointmentStatus, { label: string; variant: "success" | "warning" | "primary" | "neutral" | "danger" | "orange" }> = {
@@ -28,9 +17,12 @@ const statusConfig: Record<AppointmentStatus, { label: string; variant: "success
   faltou:         { label: "Faltou",         variant: "neutral"  },
 };
 
+type ChartDay = { label: string; value: number; isCurrent?: boolean; isHighlight?: boolean };
+type InactiveClient = { clientId: string; clientName: string; phone: string; petName: string; daysSince: number | null };
+
 /* ─── Appointment row ─── */
 function AppointmentRow({ appointment }: { appointment: any }) {
-  const cfg = statusConfig[appointment.status as AppointmentStatus] || statusConfig["agendado"];
+  const cfg = statusConfig[appointment.status as AppointmentStatus] ?? statusConfig["agendado"];
   const time = new Date(appointment.date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
   return (
@@ -43,10 +35,10 @@ function AppointmentRow({ appointment }: { appointment: any }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between">
-          <p className="font-semibold text-sm text-gray-900 truncate">{appointment.pet?.name || "Pet"}</p>
+          <p className="font-semibold text-sm text-gray-900 truncate">{appointment.pet?.name ?? "Pet"}</p>
           <Badge variant={cfg.variant} dot>{cfg.label}</Badge>
         </div>
-        <p className="text-xs text-gray-500 truncate">{appointment.service?.label || "Serviço"} · {time}</p>
+        <p className="text-xs text-gray-500 truncate">{appointment.service?.label ?? "Serviço"} · {time}</p>
       </div>
       <p className="text-sm font-bold text-gray-700 flex-shrink-0">
         {formatCurrency(appointment.totalPrice)}
@@ -55,147 +47,115 @@ function AppointmentRow({ appointment }: { appointment: any }) {
   );
 }
 
+/* ─── Skeleton ─── */
+function Skeleton({ className }: { className?: string }) {
+  return <div className={`bg-gray-200 rounded-xl animate-pulse ${className}`} />;
+}
+
 export default function DonoInicioPage() {
-  const [petShop, setPetShop] = useState<any>(null);
-  const [appointments, setAppointments] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [petShop, setPetShop]                 = useState<any>(null);
+  const [appointments, setAppointments]       = useState<any[]>([]);
+  const [metrics, setMetrics]                 = useState<any>(null);
+  const [chartData, setChartData]             = useState<ChartDay[]>([]);
+  const [inactiveClients, setInactiveClients] = useState<InactiveClient[]>([]);
+  const [loading, setLoading]                 = useState(true);
 
   useEffect(() => {
     async function loadDashboard() {
       try {
-        const [shopRes, apptRes] = await Promise.all([
+        const today = new Date().toISOString().split("T")[0];
+
+        const [shopRes, apptRes, metricsRes, chartRes, inactiveRes] = await Promise.all([
           fetch("/api/petshops/me"),
-          fetch(`/api/appointments?date=${new Date().toISOString().split("T")[0]}`)
+          fetch(`/api/appointments?date=${today}`),
+          fetch("/api/dono/metrics"),
+          fetch("/api/dono/weekly-chart"),
+          fetch("/api/dono/inactive-clients"),
         ]);
-        
-        const shopJson = await shopRes.json();
-        const apptJson = await apptRes.json();
-        
-        if (shopJson.data) setPetShop(shopJson.data);
-        if (apptJson.data) setAppointments(apptJson.data);
-      } catch (error) {
-        console.error("Erro ao carregar Dashboard:", error);
-        setError("Não foi possível carregar o painel. Verifique sua conexão ou tente novamente.");
+
+        const [shopJson, apptJson, metricsJson, chartJson, inactiveJson] = await Promise.all([
+          shopRes.json(),
+          apptRes.json(),
+          metricsRes.json(),
+          chartRes.json(),
+          inactiveRes.json(),
+        ]);
+
+        setPetShop(shopJson.data ?? null);
+        setAppointments(apptJson.data ?? []);
+        setMetrics(metricsJson.data ?? null);
+        setChartData(chartJson.data ?? []);
+        setInactiveClients(inactiveJson.data ?? []);
+      } catch (err) {
+        console.error("Erro ao carregar dashboard:", err);
       } finally {
         setLoading(false);
       }
     }
+
     loadDashboard();
   }, []);
 
-  const todayAppointments = appointments;
-  const monthRevenue = todayAppointments.reduce((s, a) => s + (a.totalPrice || 0), 0);
-  const inService = todayAppointments.filter((a) => a.status === "em_atendimento").length;
-
-  if (loading) {
-    return (
-      <div className="page-container p-5 animate-pulse min-h-screen flex flex-col gap-6">
-        {/* Header Skeleton */}
-        <div className="flex items-center justify-between">
-          <div className="w-10 h-10 rounded-full bg-gray-200" />
-          <div className="w-32 h-6 rounded-md bg-gray-200" />
-          <div className="w-10 h-10 rounded-full bg-gray-200" />
-        </div>
-        
-        {/* Banner Skeleton */}
-        <div className="w-full h-32 rounded-2xl bg-gray-200" />
-
-        {/* Resumo/Stats Skeleton */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="h-28 rounded-xl bg-gray-200" />
-          <div className="h-28 rounded-xl bg-gray-200" />
-          <div className="h-28 rounded-xl bg-gray-200" />
-          <div className="h-28 rounded-xl bg-gray-200" />
-        </div>
-      </div>
-    );
-  }
-
-  const shopName = petShop?.name || "Meu PetShop";
-  const shopLogo = petShop?.logoUrl;
-  const ownerName = petShop?.ownerName || "Dono"; // Em produção: pegar da sessão do usuário logado
-  
-  const targetPhone = appointments[0]?.pet?.client?.phone || petShop?.phone || "5511999999999";
-  const targetPetName = appointments[0]?.pet?.name || "Thor";
+  const shopName      = petShop?.name ?? "Meu PetShop";
+  const shopLogo      = petShop?.logoUrl;
+  const monthRevenue  = metrics?.monthRevenue ?? 0;
+  const inService     = metrics?.inService ?? 0;
+  const inactiveCount = metrics?.inactiveClients ?? 0;
 
   return (
     <div className="page-container">
       {/* ── Header ── */}
       <PageHeader
-        showLogo
-        rightAction={{ icon: "notifications", label: "Notificações", href: "/dono/notificacoes", badge: 3 }}
+        title={shopName}
+        subtitle="Visão Geral"
         userAvatar={{ src: shopLogo, name: shopName, href: "/dono/perfil" }}
+        rightAction={{ icon: "notifications", label: "Notificações", href: "/dono/perfil" }}
       />
-      
-      {error && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-4 text-sm font-medium border border-red-100 flex gap-2 items-center">
-            <MaterialIcon icon="error_outline" />
-            {error}
-        </div>
-      )}
 
-      {/* ── Shop banner ── */}
+      {/* ── KPI Cards ── */}
       <section className="animate-slide-up">
-        <div className="bg-gradient-primary rounded-2xl p-5 text-white">
-          <div className="flex items-center gap-3 mb-3">
-            <Avatar
-              src={shopLogo}
-              name={shopName}
-              size="md"
-              ring
-              ringColor="ring-white/30"
-            />
-            <div className="flex-1">
-              <h2 className="font-bold text-base leading-tight">{shopName}</h2>
-              <p className="text-white/70 text-xs">Bem-vindo(a)!</p>
-            </div>
-            <Link href="/dono/agenda" className="btn-secondary bg-white/15 border-0 text-white text-xs py-2 px-3">
-              Ver agenda
-            </Link>
+        {loading ? (
+          <div className="grid grid-cols-2 gap-3">
+            <Skeleton className="h-24" />
+            <Skeleton className="h-24" />
+            <Skeleton className="h-24" />
+            <Skeleton className="h-24" />
           </div>
-          <p className="text-white/60 text-xs">
-            Hoje, {formatDate(new Date().toISOString(), { weekday: "long", day: "numeric", month: "long" })}
-          </p>
-        </div>
-      </section>
-
-      {/* ── Stat Cards ── */}
-      <section className="animate-slide-up">
-        <p className="section-label mb-3">Resumo de hoje</p>
-        <div className="grid grid-cols-2 gap-3">
-          <StatCard
-            icon="calendar_today"
-            label="Agendamentos"
-            value={todayAppointments.length}
-            iconBg="bg-primary/10"
-            iconColor="text-primary"
-          />
-          <StatCard
-            icon="account_balance_wallet"
-            label="Receita prevista"
-            value={formatCurrency(monthRevenue)}
-            iconBg="bg-emerald-100"
-            iconColor="text-emerald-600"
-          />
-          <StatCard
-            icon="content_cut"
-            label="Em atendimento"
-            value={inService}
-            iconBg="bg-amber-100"
-            iconColor="text-amber-600"
-          />
-          <StatCard
-            icon="warning"
-            label="Reativar clientes"
-            value={3} // Mock fixado temporariamente
-            trend="há 30+ dias"
-            trendDirection="down"
-            iconBg="bg-red-100"
-            iconColor="text-red-500"
-            onClick={() => {}}
-          />
-        </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <StatCard
+              icon="event"
+              label="Hoje"
+              value={appointments.length}
+              iconBg="bg-blue-100"
+              iconColor="text-blue-600"
+            />
+            <StatCard
+              icon="attach_money"
+              label="Receita do mês"
+              value={formatCurrency(monthRevenue)}
+              iconBg="bg-emerald-100"
+              iconColor="text-emerald-600"
+            />
+            <StatCard
+              icon="content_cut"
+              label="Em atendimento"
+              value={inService}
+              iconBg="bg-amber-100"
+              iconColor="text-amber-600"
+            />
+            <StatCard
+              icon="warning"
+              label="Reativar clientes"
+              value={inactiveCount}
+              trend="há 30+ dias"
+              trendDirection="down"
+              iconBg="bg-red-100"
+              iconColor="text-red-500"
+              onClick={() => {}}
+            />
+          </div>
+        )}
       </section>
 
       {/* ── Weekly chart ── */}
@@ -210,67 +170,89 @@ export default function DonoInicioPage() {
               Ver relatório
             </Link>
           </div>
-          <BarChart data={weeklyData} showLabels showValues height="md" />
+          {loading ? (
+            <Skeleton className="h-24 w-full" />
+          ) : (
+            <BarChart data={chartData} showLabels showValues height="md" />
+          )}
         </div>
       </section>
 
       {/* ── Today's agenda ── */}
       <section className="animate-slide-up">
         <div className="flex items-center justify-between mb-3">
-          <p className="section-label">Agenda de hoje (Tempo Real)</p>
+          <p className="section-label">Agenda de hoje</p>
           <Link href="/dono/agenda" className="text-xs text-primary font-bold">
             Ver tudo
           </Link>
         </div>
         <div className="card space-y-2">
-          {todayAppointments.length === 0 ? (
+          {loading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-14" />
+              <Skeleton className="h-14" />
+            </div>
+          ) : appointments.length === 0 ? (
             <p className="text-center text-gray-400 text-sm py-4">
               Nenhum agendamento para hoje.
             </p>
           ) : (
-            todayAppointments.map((apt) => <AppointmentRow key={apt.id} appointment={apt} />)
+            appointments.map((apt) => <AppointmentRow key={apt.id} appointment={apt} />)
           )}
         </div>
       </section>
 
-      {/* ── Retorno Automation Section (Mocks mantidos visuais) ── */}
-      <section className="animate-slide-up space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold flex items-center gap-2 text-gray-900">
-            <MaterialIcon icon="auto_mode" size="md" className="text-primary" />
-            Automação de Retorno
-          </h2>
-          <Link href="/dono/clientes?filter=inactive" className="text-primary text-sm font-semibold hover:underline">
-            Ver todos
-          </Link>
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Avatar name={targetPetName} size="md" />
-                <span className="absolute bottom-0 right-0 bg-emerald-500 w-3 h-3 rounded-full border-2 border-white" />
-              </div>
-              <div>
-                <p className="font-bold text-lg text-gray-900">{targetPetName}</p>
-                <div className="flex items-center gap-1 text-red-500">
-                  <MaterialIcon icon="schedule" size="xs" />
-                  <p className="text-sm font-medium leading-none">28 dias sem banho</p>
-                </div>
-              </div>
-            </div>
-            <Link
-              href={`https://wa.me/${targetPhone}?text=${encodeURIComponent(`Olá, notamos que o ${targetPetName} está a 28 dias sem tomar banho no nosso PetShop. Vamos agendar?`)}`}
-              target="_blank"
-              className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all bg-[#25D366] hover:bg-[#20bd5a]"
-            >
-              <MaterialIcon icon="chat" size="xs" />
-              Enviar
+      {/* ── Automação de Retorno (dados reais) ── */}
+      {!loading && inactiveClients.length > 0 && (
+        <section className="animate-slide-up space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold flex items-center gap-2 text-gray-900">
+              <MaterialIcon icon="auto_mode" size="md" className="text-primary" />
+              Automação de Retorno
+            </h2>
+            <Link href="/dono/clientes?filter=inactive" className="text-primary text-sm font-semibold hover:underline">
+              Ver todos ({inactiveCount})
             </Link>
           </div>
-        </div>
-      </section>
+
+          <div className="space-y-3">
+            {inactiveClients.slice(0, 3).map((client) => (
+              <div
+                key={client.clientId}
+                className="flex items-center justify-between bg-white p-4 rounded-xl border border-gray-100 shadow-sm"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <Avatar name={client.petName} size="md" />
+                    <span className="absolute bottom-0 right-0 bg-emerald-500 w-3 h-3 rounded-full border-2 border-white" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-lg text-gray-900">{client.petName}</p>
+                    <div className="flex items-center gap-1 text-red-500">
+                      <MaterialIcon icon="schedule" size="xs" />
+                      <p className="text-sm font-medium leading-none">
+                        {client.daysSince !== null
+                          ? `${client.daysSince} dias sem visita`
+                          : "Sem visita registrada"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <Link
+                  href={`https://wa.me/${client.phone.replace(/\D/g, "")}?text=${encodeURIComponent(
+                    `Olá ${client.clientName}, notamos que o ${client.petName} está há ${client.daysSince ?? "alguns"} dias sem visita no nosso PetShop. Que tal agendar?`
+                  )}`}
+                  target="_blank"
+                  className="flex items-center gap-2 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all bg-[#25D366] hover:bg-[#20bd5a]"
+                >
+                  <MaterialIcon icon="chat" size="xs" />
+                  Enviar
+                </Link>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

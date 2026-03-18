@@ -12,6 +12,9 @@ const ROLE_ROUTES: Record<string, string> = {
 // Rotas públicas (sem autenticação)
 const PUBLIC_ROUTES = ["/login", "/cadastro", "/esqueci-senha", "/redefinir-senha", "/", "/api/webhooks"];
 
+// Rotas do DONO que não exigem petShopId (onboarding)
+const DONO_NO_SHOP_ALLOWED = ["/dono/onboarding"];
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -81,6 +84,16 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(
         new URL(redirectMap[userRole] ?? "/login", request.url)
       );
+    }
+
+    // DONO sem pet shop → onboarding (lê petShopId do user_metadata — zero DB call)
+    if (
+      userRole === "DONO" &&
+      pathname.startsWith("/dono") &&
+      !DONO_NO_SHOP_ALLOWED.some((r) => pathname.startsWith(r)) &&
+      !user.user_metadata?.petShopId
+    ) {
+      return NextResponse.redirect(new URL("/dono/onboarding", request.url));
     }
   }
 
