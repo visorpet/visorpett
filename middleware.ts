@@ -68,11 +68,15 @@ export async function middleware(request: NextRequest) {
     const requiredRole = ROLE_ROUTES[matchedPrefix];
     const userRole = user.user_metadata?.role as string | undefined;
 
+    // SUPER_ADMIN pode acessar qualquer rota
+    if (userRole === "SUPER_ADMIN") {
+      return response;
+    }
+
     if (userRole && userRole !== requiredRole) {
       const redirectMap: Record<string, string> = {
-        CLIENTE:     "/cliente/inicio",
-        DONO:        "/dono/inicio",
-        SUPER_ADMIN: "/admin/painel",
+        CLIENTE: "/cliente/inicio",
+        DONO:    "/dono/inicio",
       };
       return NextResponse.redirect(
         new URL(redirectMap[userRole] ?? "/login", request.url)
