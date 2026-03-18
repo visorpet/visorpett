@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
-import { db } from "@/lib/db";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { clientSchema } from "@/lib/validations/client";
 import { z } from "zod";
 
@@ -20,23 +20,22 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search");
-    const extraFilters: any = {};
+
+    const db = createAdminClient();
+    let query = db
+      .from("Client")
+      .select("*, pets:Pet!clientId(*, appointments:Appointment!petId(date, status))")
+      .eq("petShopId", petShopId)
+      .order("createdAt", { ascending: false });
+
     if (search) {
-      extraFilters.OR = [
-        { name:  { contains: search, mode: "insensitive" } },
-        { phone: { contains: search } },
-      ];
+      query = query.or(`name.ilike.%${search}%,phone.ilike.%${search}%`);
     }
 
-    const clients = await db.client.findMany({
-      where: { petShopId, ...extraFilters },
-      include: {
-        pets: { include: { appointments: { orderBy: { date: "desc" }, take: 1 } } },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const { data: clients, error } = await query;
+    if (error) throw error;
 
-    return NextResponse.json({ data: clients });
+    return NextResponse.json({ data: clients ?? [] });
   } catch (error) {
     console.error("Error fetching clients:", error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
@@ -64,21 +63,31 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Você só pode criar clientes para o seu pet shop" }, { status: 403 });
     }
 
-    let linkedUserId = null;
+    const db = createAdminClient();
+
+    let linkedUserId: string | null = null;
     if (parsedData.email) {
-      const existingUser = await db.user.findUnique({ where: { email: parsedData.email } });
+      const { data: existingUser } = await db
+        .from("User")
+        .select("id")
+        .eq("email", parsedData.email)
+        .maybeSingle();
       if (existingUser) linkedUserId = existingUser.id;
     }
 
-    const newClient = await db.client.create({
-      data: {
+    const { data: newClient, error } = await db
+      .from("Client")
+      .insert({
         name: parsedData.name,
-        email: parsedData.email,
-        phone: parsedData.phone,
+        email: parsedData.email ?? null,
+        phone: parsedData.phone ?? null,
         petShopId,
         userId: linkedUserId,
-      },
-    });
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
 
     return NextResponse.json({ data: newClient }, { status: 201 });
   } catch (error) {
@@ -86,6 +95,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Erro de validação", details: error.issues }, { status: 400 });
     }
     console.error("Error creating client:", error);
-    return NextResponse.json({ error: "Erro interno", details: error }, { status: 500 });
+    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }

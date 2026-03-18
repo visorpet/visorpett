@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
-import { db } from "@/lib/db";
+import { createAdminClient } from "@/lib/supabase/admin";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
@@ -11,33 +13,44 @@ export async function GET() {
     }
 
     const userId = session.user.id;
+    const db = createAdminClient();
 
-    const [pets, upcomingAppointment] = await Promise.all([
-      db.pet.findMany({
-        where: { ownerId: userId },
-        include: {
-          vaccines: {
-            orderBy: { appliedAt: "desc" },
-            take: 2,
-          },
-        },
-      }),
-      db.appointment.findFirst({
-        where: {
-          pet: { ownerId: userId },
-          status: { in: ["agendado", "confirmado", "em_atendimento"] },
-          date: { gte: new Date() },
-        },
-        orderBy: { date: "asc" },
-        include: { pet: true, service: true, petShop: true, groomer: true },
-      }),
+    const { data: pets } = await db
+      .from("Pet")
+      .select("*, vaccines:Vaccine!petId(id, name, appliedAt, nextDueAt)")
+      .eq("ownerId", userId)
+      .order("createdAt", { ascending: false });
+
+    const petIds = (pets ?? []).map((p: { id: string }) => p.id);
+
+    const [upcomingRow, totalRow] = await Promise.all([
+      petIds.length > 0
+        ? db
+            .from("Appointment")
+            .select(
+              "*, pet:Pet!petId(*), service:Service!serviceId(id,label,price), petShop:PetShop!petShopId(id,name), groomer:Groomer!groomerId(id,name)"
+            )
+            .in("petId", petIds)
+            .in("status", ["agendado", "confirmado", "em_atendimento"])
+            .gte("date", new Date().toISOString())
+            .order("date", { ascending: true })
+            .limit(1)
+        : Promise.resolve({ data: [] }),
+      petIds.length > 0
+        ? db
+            .from("Appointment")
+            .select("id", { count: "exact", head: true })
+            .in("petId", petIds)
+        : Promise.resolve({ count: 0 }),
     ]);
 
-    const totalAppointments = await db.appointment.count({
-      where: { pet: { ownerId: userId } },
+    return NextResponse.json({
+      data: {
+        pets: pets ?? [],
+        upcomingAppointment: upcomingRow.data?.[0] ?? null,
+        totalAppointments: (totalRow as { count: number | null }).count ?? 0,
+      },
     });
-
-    return NextResponse.json({ data: { pets, upcomingAppointment, totalAppointments } });
   } catch (error) {
     console.error("[API_CLIENTE_DASHBOARD_GET]", error);
     return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 });

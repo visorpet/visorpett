@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
-import { db } from "@/lib/db";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { z } from "zod";
 
 const petshopUpdateSchema = z.object({
@@ -27,10 +27,14 @@ export async function GET() {
     }
     if (!petShopId) return NextResponse.json({ error: "Você não possui um pet shop" }, { status: 404 });
 
-    const petShop = await db.petShop.findUnique({
-      where: { id: petShopId },
-      include: { subscription: true, groomers: true, services: { where: { active: true } } },
-    });
+    const db = createAdminClient();
+    const { data: petShop, error } = await db
+      .from("PetShop")
+      .select("*, subscription:Subscription!petShopId(*), groomers:Groomer!petShopId(*), services:Service!petShopId(*)")
+      .eq("id", petShopId)
+      .maybeSingle();
+
+    if (error) throw error;
 
     return NextResponse.json({ data: petShop });
   } catch (error) {
@@ -54,7 +58,15 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const parsedData = petshopUpdateSchema.parse(body);
 
-    const petShop = await db.petShop.update({ where: { id: petShopId }, data: parsedData });
+    const db = createAdminClient();
+    const { data: petShop, error } = await db
+      .from("PetShop")
+      .update(parsedData)
+      .eq("id", petShopId)
+      .select()
+      .single();
+
+    if (error) throw error;
 
     return NextResponse.json({ data: petShop });
   } catch (error) {

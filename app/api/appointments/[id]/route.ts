@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
-import { db } from "@/lib/db";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { updateAppointmentStatusSchema } from "@/lib/validations/appointment";
 import { z } from "zod";
 
@@ -15,7 +15,14 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       return NextResponse.json({ error: "Acesso restrito para Donos" }, { status: 403 });
     }
 
-    const appointment = await db.appointment.findUnique({ where: { id: params.id } });
+    const db = createAdminClient();
+
+    const { data: appointment } = await db
+      .from("Appointment")
+      .select("id, petShopId")
+      .eq("id", params.id)
+      .maybeSingle();
+
     if (!appointment) return NextResponse.json({ error: "Agendamento não encontrado" }, { status: 404 });
 
     if (role === "DONO" && petShopId !== appointment.petShopId) {
@@ -25,10 +32,14 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     const body = await request.json();
     const parsedData = updateAppointmentStatusSchema.parse(body);
 
-    const updatedAppointment = await db.appointment.update({
-      where: { id: params.id },
-      data: { status: parsedData.status },
-    });
+    const { data: updatedAppointment, error } = await db
+      .from("Appointment")
+      .update({ status: parsedData.status })
+      .eq("id", params.id)
+      .select()
+      .single();
+
+    if (error) throw error;
 
     return NextResponse.json({ data: updatedAppointment });
   } catch (error) {

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
-import { db } from "@/lib/db";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -12,11 +12,14 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
 
     const { status } = await request.json();
+    const db = createAdminClient();
 
-    await db.subscription.update({
-      where: { petShopId: params.id },
-      data: { status },
-    });
+    const { error } = await db
+      .from("Subscription")
+      .update({ status })
+      .eq("petShopId", params.id);
+
+    if (error) throw error;
 
     return NextResponse.json({ success: true, statusAtualizado: status });
   } catch (error) {

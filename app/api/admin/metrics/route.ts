@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
-import { db } from "@/lib/db";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -13,16 +13,27 @@ export async function GET() {
       return NextResponse.json({ error: "Acesso restrito ao Super Admin" }, { status: 403 });
     }
 
-    const totalPetShops = await db.petShop.count();
-    const activeSubscriptions = await db.subscription.count({
-      where: { status: { in: ["ACTIVE", "TRIALING"] } },
-    });
+    const db = createAdminClient();
 
-    const pendingTickets = 14;
+    const [{ count: totalPetShops }, { count: activeSubscriptions }] = await Promise.all([
+      db.from("PetShop").select("id", { count: "exact", head: true }),
+      db
+        .from("Subscription")
+        .select("id", { count: "exact", head: true })
+        .in("status", ["ACTIVE", "TRIALING"]),
+    ]);
+
     const churnRate = 1.2;
-    const mrr = activeSubscriptions * 99;
+    const mrr = (activeSubscriptions ?? 0) * 99;
 
-    return NextResponse.json({ data: { totalPetShops, activeSubscriptions, pendingTickets, churnRate, mrr } });
+    return NextResponse.json({
+      data: {
+        totalPetShops: totalPetShops ?? 0,
+        activeSubscriptions: activeSubscriptions ?? 0,
+        churnRate,
+        mrr,
+      },
+    });
   } catch (error) {
     console.error("Erro em Admin Metrics:", error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });

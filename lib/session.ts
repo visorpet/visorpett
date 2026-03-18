@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { db } from "@/lib/db";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export type AppSession = {
   user: {
@@ -12,35 +12,26 @@ export type AppSession = {
   };
 };
 
-/**
- * Retorna a sessão do usuário autenticado via Supabase.
- * Usa user_metadata como fonte de verdade (não depende do Prisma para auth).
- * Só usa o DB para petShopId (DONO users).
- */
 export async function getSession(): Promise<AppSession | null> {
   try {
     const supabase = createClient();
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
-
+    const { data: { user }, error } = await supabase.auth.getUser();
     if (error || !user) return null;
 
     const role = (user.user_metadata?.role as string) ?? "CLIENTE";
     const name = (user.user_metadata?.name as string) ?? user.email ?? null;
 
     let petShopId: string | null = null;
-
     if (role === "DONO") {
       try {
-        const petShop = await db.petShop.findUnique({
-          where: { ownerId: user.id },
-          select: { id: true },
-        });
-        petShopId = petShop?.id ?? null;
+        const db = createAdminClient();
+        const { data: shop } = await db
+          .from("PetShop")
+          .select("id")
+          .eq("ownerId", user.id)
+          .maybeSingle();
+        petShopId = shop?.id ?? null;
       } catch {
-        // DB indisponível — DONO sem petShopId
         petShopId = null;
       }
     }

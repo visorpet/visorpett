@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
-import { db } from "@/lib/db";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -13,16 +13,44 @@ export async function GET() {
       return NextResponse.json({ error: "Acesso restrito ao Super Admin" }, { status: 403 });
     }
 
-    const shops = await db.petShop.findMany({
-      include: {
-        owner: { select: { name: true, email: true, phone: true } },
-        subscription: true,
-        _count: { select: { clients: true, appointments: true } },
-      },
-      orderBy: { createdAt: "desc" },
+    const db = createAdminClient();
+
+    const { data: shops, error } = await db
+      .from("PetShop")
+      .select("id, name, city, state, createdAt, owner:User!ownerId(name,email), subscription:Subscription!petShopId(plan,status)")
+      .order("createdAt", { ascending: false });
+
+    if (error) throw error;
+
+    // Fetch client and appointment counts
+    const shopIds = (shops ?? []).map((s: { id: string }) => s.id);
+    const [{ data: clientRows }, { data: appointmentRows }] = await Promise.all([
+      shopIds.length > 0
+        ? db.from("Client").select("petShopId").in("petShopId", shopIds)
+        : Promise.resolve({ data: [] }),
+      shopIds.length > 0
+        ? db.from("Appointment").select("petShopId").in("petShopId", shopIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    const clientCount: Record<string, number> = {};
+    const appointmentCount: Record<string, number> = {};
+    (clientRows ?? []).forEach((r: { petShopId: string }) => {
+      clientCount[r.petShopId] = (clientCount[r.petShopId] ?? 0) + 1;
+    });
+    (appointmentRows ?? []).forEach((r: { petShopId: string }) => {
+      appointmentCount[r.petShopId] = (appointmentCount[r.petShopId] ?? 0) + 1;
     });
 
-    return NextResponse.json({ data: shops });
+    const result = (shops ?? []).map((s: any) => ({
+      ...s,
+      _count: {
+        clients: clientCount[s.id] ?? 0,
+        appointments: appointmentCount[s.id] ?? 0,
+      },
+    }));
+
+    return NextResponse.json({ data: result });
   } catch (error) {
     console.error("Erro buscar PetShops:", error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });

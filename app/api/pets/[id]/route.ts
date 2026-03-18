@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
-import { db } from "@/lib/db";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { updatePetSchema } from "@/lib/validations/pet";
 import { z } from "zod";
 
@@ -12,30 +12,28 @@ export async function GET(request: Request, { params }: { params: { id: string }
     if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
     const { role, id: userId, petShopId } = session.user;
+    const db = createAdminClient();
 
-    const pet = await db.pet.findUnique({
-      where: { id: params.id },
-      include: {
-        client: true,
-        vaccines: { orderBy: { appliedAt: "desc" } },
-        medicalNotes: { orderBy: { createdAt: "desc" } },
-        appointments: { orderBy: { date: "desc" }, take: 5 },
-      },
-    });
+    const { data: pet, error } = await db
+      .from("Pet")
+      .select("*, client:Client!clientId(*), vaccines:Vaccine!petId(*), medicalNotes:MedicalNote!petId(*), appointments:Appointment!petId(*)")
+      .eq("id", params.id)
+      .maybeSingle();
 
+    if (error) throw error;
     if (!pet) return NextResponse.json({ error: "Pet não encontrado" }, { status: 404 });
 
     if (role === "CLIENTE" && pet.ownerId !== userId) {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
     }
-    if (role === "DONO" && pet.client.petShopId !== petShopId) {
+    if (role === "DONO" && pet.client?.petShopId !== petShopId) {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
     }
 
     return NextResponse.json({ data: pet });
   } catch (error) {
     console.error("Error fetching pet details:", error);
-    return NextResponse.json({ error: "Erro interno", details: error }, { status: 500 });
+    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }
 
@@ -45,35 +43,41 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
     const { role, id: userId, petShopId } = session.user;
+    const db = createAdminClient();
 
-    const existingPet = await db.pet.findUnique({
-      where: { id: params.id },
-      include: { client: true },
-    });
+    const { data: existingPet } = await db
+      .from("Pet")
+      .select("id, ownerId, client:Client!clientId(petShopId)")
+      .eq("id", params.id)
+      .maybeSingle();
 
     if (!existingPet) return NextResponse.json({ error: "Pet não encontrado" }, { status: 404 });
 
     if (role === "CLIENTE" && existingPet.ownerId !== userId) {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
     }
-    if (role === "DONO" && existingPet.client.petShopId !== petShopId) {
+    if (role === "DONO" && existingPet.client?.petShopId !== petShopId) {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
     }
 
     const body = await request.json();
     const parsedData = updatePetSchema.parse(body);
 
-    const updatedPet = await db.pet.update({
-      where: { id: params.id },
-      data: {
+    const { data: updatedPet, error } = await db
+      .from("Pet")
+      .update({
         name: parsedData.name,
         species: parsedData.species,
-        breed: parsedData.breed,
-        birthDate: parsedData.birthDate ? new Date(parsedData.birthDate) : undefined,
-        weight: parsedData.weight,
-        notes: parsedData.notes,
-      },
-    });
+        breed: parsedData.breed ?? null,
+        birthDate: parsedData.birthDate ?? null,
+        weight: parsedData.weight ?? null,
+        notes: parsedData.notes ?? null,
+      })
+      .eq("id", params.id)
+      .select()
+      .single();
+
+    if (error) throw error;
 
     return NextResponse.json({ data: updatedPet });
   } catch (error) {
@@ -81,7 +85,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: "Erro de validação", details: error.issues }, { status: 400 });
     }
     console.error("Error updating pet:", error);
-    return NextResponse.json({ error: "Erro interno", details: error }, { status: 500 });
+    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }
 
@@ -91,26 +95,29 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
     const { role, id: userId, petShopId } = session.user;
+    const db = createAdminClient();
 
-    const existingPet = await db.pet.findUnique({
-      where: { id: params.id },
-      include: { client: true },
-    });
+    const { data: existingPet } = await db
+      .from("Pet")
+      .select("id, ownerId, client:Client!clientId(petShopId)")
+      .eq("id", params.id)
+      .maybeSingle();
 
     if (!existingPet) return NextResponse.json({ error: "Pet não encontrado" }, { status: 404 });
 
     if (role === "CLIENTE" && existingPet.ownerId !== userId) {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
     }
-    if (role === "DONO" && existingPet.client.petShopId !== petShopId) {
+    if (role === "DONO" && existingPet.client?.petShopId !== petShopId) {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
     }
 
-    await db.pet.delete({ where: { id: params.id } });
+    const { error } = await db.from("Pet").delete().eq("id", params.id);
+    if (error) throw error;
 
     return NextResponse.json({ data: { success: true } });
   } catch (error) {
     console.error("Error deleting pet:", error);
-    return NextResponse.json({ error: "Erro interno", details: error }, { status: 500 });
+    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }
