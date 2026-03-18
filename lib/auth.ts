@@ -51,11 +51,15 @@ export const authOptions: NextAuthOptions = {
 
       // Busca petShopId se for DONO (apenas uma vez por sessão)
       if (token.role === "DONO" && !token.petShopId) {
-        const petShop = await db.petShop.findUnique({
-          where: { ownerId: token.id as string },
-          select: { id: true },
-        });
-        token.petShopId = petShop?.id ?? null;
+        try {
+          const petShop = await db.petShop.findUnique({
+            where: { ownerId: token.id as string },
+            select: { id: true },
+          });
+          token.petShopId = petShop?.id ?? null;
+        } catch {
+          token.petShopId = null;
+        }
       }
 
       return token;
