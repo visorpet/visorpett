@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { User } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
@@ -22,15 +23,21 @@ export async function GET() {
 
     if (error) throw error;
 
-    // Fetch client and appointment counts
     const shopIds = (shops ?? []).map((s: { id: string }) => s.id);
-    const [{ data: clientRows }, { data: appointmentRows }] = await Promise.all([
+    const ownerIdSet = new Set((shops ?? []).map((s: { ownerId: string }) => s.ownerId).filter(Boolean));
+    const ownerIds = Array.from(ownerIdSet);
+
+    // Fetch counts and owner profiles in parallel
+    const [{ data: clientRows }, { data: appointmentRows }, { data: authData }] = await Promise.all([
       shopIds.length > 0
         ? db.from("Client").select("petShopId").in("petShopId", shopIds)
         : Promise.resolve({ data: [] }),
       shopIds.length > 0
         ? db.from("Appointment").select("petShopId").in("petShopId", shopIds)
         : Promise.resolve({ data: [] }),
+      ownerIds.length > 0
+        ? db.auth.admin.listUsers()
+        : Promise.resolve({ data: { users: [] } }),
     ]);
 
     const clientCount: Record<string, number> = {};
@@ -42,12 +49,15 @@ export async function GET() {
       appointmentCount[r.petShopId] = (appointmentCount[r.petShopId] ?? 0) + 1;
     });
 
-    // Busca owner via auth.admin para não depender da tabela User pública
-    const { data: authData } = await db.auth.admin.listUsers();
     const authUsers: Record<string, { name?: string; email?: string }> = {};
-    (authData?.users ?? []).forEach((u: any) => {
-      authUsers[u.id] = { name: u.user_metadata?.name ?? u.email, email: u.email };
-    });
+    ((authData as { users: User[] } | null)?.users ?? [])
+      .filter((u: User) => ownerIdSet.has(u.id))
+      .forEach((u: User) => {
+        authUsers[u.id] = {
+          name: (u.user_metadata?.name as string | undefined) ?? u.email,
+          email: u.email,
+        };
+      });
 
     const result = (shops ?? []).map((s: any) => ({
       ...s,
