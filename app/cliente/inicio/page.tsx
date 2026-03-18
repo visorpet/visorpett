@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useUser } from "@/lib/supabase/useUser";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Avatar, Badge, ProgressBar, MaterialIcon } from "@/components/ui";
 import { formatCurrency, formatDate, getGreeting, pluralize } from "@/lib/utils";
@@ -38,7 +38,7 @@ function QuickAction({ icon, label, href, color = "primary" }: {
 }
 
 export default function ClienteInicioPage() {
-  const { data: session } = useSession();
+  const { user } = useUser();
   const greeting = getGreeting();
   
   const [pets, setPets] = useState<any[]>([]);
@@ -94,8 +94,8 @@ export default function ClienteInicioPage() {
     );
   }
 
-  const userName = session?.user?.name || "Pet Lover";
-  const userPhoto = session?.user?.image;
+  const userName = user?.name || "Pet Lover";
+  const userPhoto = user?.image;
 
   return (
     <div className="page-container">
@@ -109,8 +109,8 @@ export default function ClienteInicioPage() {
           href: "/cliente/notificacoes"
         }}
         userAvatar={{ 
-          name: session?.user?.name || "Tutor", 
-          src: session?.user?.image || undefined,
+          name: user?.name || "Tutor", 
+          src: user?.image || undefined,
           href: "/cliente/perfil" 
         }}
       />

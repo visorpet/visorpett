@@ -1,73 +1,45 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { appointmentSchema } from "@/lib/validations/appointment";
 import { z } from "zod";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-    }
-
-    const role = (session.user as any).role;
-    const userId = (session.user as any).id;
-    const petShopId = (session.user as any).petShopId;
-
+    const { role, id: userId, petShopId } = session.user;
     const { searchParams } = new URL(request.url);
-    const dateParam = searchParams.get("date"); // ex: 2026-03-12
+    const dateParam = searchParams.get("date");
     const statusParam = searchParams.get("status");
 
-    let appointments;
-
-    // Filtros de busca básica
     const extraFilters: any = {};
     if (dateParam) {
       const startOfDay = new Date(dateParam);
       startOfDay.setUTCHours(0, 0, 0, 0);
       const endOfDay = new Date(dateParam);
       endOfDay.setUTCHours(23, 59, 59, 999);
-      
-      extraFilters.date = {
-        gte: startOfDay,
-        lte: endOfDay,
-      };
+      extraFilters.date = { gte: startOfDay, lte: endOfDay };
     }
-    if (statusParam) {
-      extraFilters.status = statusParam;
-    }
+    if (statusParam) extraFilters.status = statusParam;
+
+    let appointments;
 
     if (role === "CLIENTE") {
-      // Cliente vê os seus agendamentos
       const pets = await db.pet.findMany({ where: { ownerId: userId }, select: { id: true } });
       const petIds = pets.map((p: { id: string }) => p.id);
-
       appointments = await db.appointment.findMany({
         where: { petId: { in: petIds }, ...extraFilters },
-        include: {
-          pet: true,
-          petShop: true,
-          service: true,
-          groomer: true,
-        },
+        include: { pet: true, petShop: true, service: true, groomer: true },
         orderBy: { date: "asc" },
       });
     } else if (role === "DONO" && petShopId) {
-      // Dono vê agendamentos da loja
       appointments = await db.appointment.findMany({
-        where: { petShopId: petShopId, ...extraFilters },
-        include: {
-          pet: {
-            include: { client: true }
-          },
-          service: true,
-          groomer: true,
-        },
+        where: { petShopId, ...extraFilters },
+        include: { pet: { include: { client: true } }, service: true, groomer: true },
         orderBy: { date: "asc" },
       });
     } else {
@@ -83,15 +55,10 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-    }
-
-    const role = (session.user as any).role;
-    const userId = (session.user as any).id;
-
+    const { role, id: userId } = session.user;
     const body = await request.json();
     const parsedData = appointmentSchema.parse(body);
 
@@ -100,24 +67,15 @@ export async function POST(request: Request) {
       include: { client: true },
     });
 
-    if (!pet) {
-      return NextResponse.json({ error: "Pet não encontrado" }, { status: 404 });
-    }
+    if (!pet) return NextResponse.json({ error: "Pet não encontrado" }, { status: 404 });
 
-    // Apenas donos, admins, ou o dono do pet
     if (role === "CLIENTE" && pet.ownerId !== userId) {
       return NextResponse.json({ error: "Acesso negado", message: "Este pet não pertence a você" }, { status: 403 });
     }
 
-    const service = await db.service.findUnique({
-      where: { id: parsedData.serviceId },
-    });
+    const service = await db.service.findUnique({ where: { id: parsedData.serviceId } });
+    if (!service) return NextResponse.json({ error: "Serviço não encontrado" }, { status: 404 });
 
-    if (!service) {
-      return NextResponse.json({ error: "Serviço não encontrado" }, { status: 404 });
-    }
-
-    // TODO: Adicionar notificação via e-mail e whatsapp
     const appointment = await db.appointment.create({
       data: {
         petId: parsedData.petId,
@@ -126,7 +84,7 @@ export async function POST(request: Request) {
         groomerId: parsedData.groomerId,
         date: new Date(parsedData.date),
         notes: parsedData.notes,
-        totalPrice: service.price, // Pega o preço base do serviço no momento
+        totalPrice: service.price,
         status: "agendado",
       },
     });
@@ -134,10 +92,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ data: appointment }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Erro de validação", details: error.issues },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Erro de validação", details: error.issues }, { status: 400 });
     }
     console.error("Error creating appointment:", error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });

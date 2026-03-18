@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useSession } from "next-auth/react";
+import { useUser } from "@/lib/supabase/useUser";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MaterialIcon, Badge } from "@/components/ui";
 
@@ -45,7 +45,7 @@ function StarRating({ rating, size = "sm" }: { rating: number; size?: "xs" | "sm
 }
 
 export default function AvaliacoesPage() {
-  const { data: session } = useSession();
+  const { user } = useUser();
 
   const avgRating =
     MOCK_REVIEWS.length > 0
@@ -58,8 +58,8 @@ export default function AvaliacoesPage() {
         title="Minhas Avaliações"
         showBack
         userAvatar={{
-          name: session?.user?.name || "Tutor",
-          src: session?.user?.image || undefined,
+          name: user?.name || "Tutor",
+          src: user?.image || undefined,
           href: "/cliente/perfil",
         }}
       />

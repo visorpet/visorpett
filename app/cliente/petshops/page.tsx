@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useSession } from "next-auth/react";
+import { useUser } from "@/lib/supabase/useUser";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MaterialIcon } from "@/components/ui";
@@ -59,7 +59,7 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 export default function PetShopsPage() {
-  const { data: session } = useSession();
+  const { user } = useUser();
 
   return (
     <div className="page-container font-sans pb-24">
@@ -67,8 +67,8 @@ export default function PetShopsPage() {
         title="Pet Shops"
         showBack
         userAvatar={{
-          name: session?.user?.name || "Tutor",
-          src: session?.user?.image || undefined,
+          name: user?.name || "Tutor",
+          src: user?.image || undefined,
           href: "/cliente/perfil",
         }}
       />

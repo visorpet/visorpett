@@ -1,6 +1,10 @@
-// app/api/auth/[...nextauth]/route.ts
-import NextAuth from "next-auth";
-import { authOptions } from "@/lib/auth";
+// Rota NextAuth removida — autenticação migrada para Supabase.
+// Mantido para evitar 404 em deploys antigos.
+import { NextResponse } from "next/server";
 
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+export async function GET() {
+  return NextResponse.json({ message: "Auth migrado para Supabase" }, { status: 404 });
+}
+export async function POST() {
+  return NextResponse.json({ message: "Auth migrado para Supabase" }, { status: 404 });
+}

@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useUser } from "@/lib/supabase/useUser";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Avatar, Badge, MaterialIcon, ProgressBar } from "@/components/ui";
 import { cn, formatDate } from "@/lib/utils";
 
 export default function PetProntuarioPage({ params }: { params: { id: string } }) {
-  const { data: session } = useSession();
+  const { user } = useUser();
   const [pet, setPet] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,8 +73,8 @@ export default function PetProntuarioPage({ params }: { params: { id: string } }
       <PageHeader 
         title="Prontuário" 
         userAvatar={{ 
-          name: session?.user?.name || "Tutor", 
-          src: session?.user?.image || undefined,
+          name: user?.name || "Tutor", 
+          src: user?.image || undefined,
           href: "/cliente/perfil" 
         }} 
       />

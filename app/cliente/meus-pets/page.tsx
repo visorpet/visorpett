@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useUser } from "@/lib/supabase/useUser";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MaterialIcon, Avatar } from "@/components/ui";
 
@@ -44,7 +44,7 @@ function PetCard({ pet }: { pet: Pet }) {
 }
 
 export default function MeusPetsPage() {
-  const { data: session } = useSession();
+  const { user } = useUser();
   const [pets, setPets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -92,8 +92,8 @@ export default function MeusPetsPage() {
           href: "/cliente/meus-pets/novo",
         }}
         userAvatar={{ 
-          name: session?.user?.name || "Tutor", 
-          src: session?.user?.image || undefined, 
+          name: user?.name || "Tutor", 
+          src: user?.image || undefined, 
           href: "/cliente/perfil" 
         }}
       />

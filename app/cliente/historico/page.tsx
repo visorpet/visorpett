@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useUser } from "@/lib/supabase/useUser";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MaterialIcon, Badge } from "@/components/ui";
@@ -24,7 +24,7 @@ const statusConfig: Record<AppointmentStatus, {
 };
 
 export default function HistoricoPage() {
-  const { data: session } = useSession();
+  const { user } = useUser();
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,8 +71,8 @@ export default function HistoricoPage() {
         title="Histórico"
         rightAction={{ icon: "notifications", label: "Notificações", href: "/cliente/notificacoes" }}
         userAvatar={{ 
-          name: session?.user?.name || "Tutor", 
-          src: session?.user?.image || undefined, 
+          name: user?.name || "Tutor", 
+          src: user?.image || undefined, 
           href: "/cliente/perfil" 
         }}
       />

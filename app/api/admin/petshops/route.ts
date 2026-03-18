@@ -1,22 +1,15 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-    }
-
-    const role = (session.user as any).role;
-
-    // Apenas Super Admin pode listar todas as lojas do aplicativo
-    if (role !== "SUPER_ADMIN") {
+    if (session.user.role !== "SUPER_ADMIN") {
       return NextResponse.json({ error: "Acesso restrito ao Super Admin" }, { status: 403 });
     }
 
@@ -24,7 +17,7 @@ export async function GET(request: Request) {
       include: {
         owner: { select: { name: true, email: true, phone: true } },
         subscription: true,
-        _count: { select: { clients: true, appointments: true } }
+        _count: { select: { clients: true, appointments: true } },
       },
       orderBy: { createdAt: "desc" },
     });

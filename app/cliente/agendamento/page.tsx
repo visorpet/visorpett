@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useSession } from "next-auth/react";
+import { useUser } from "@/lib/supabase/useUser";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -37,7 +37,7 @@ const timeSlots: { time: string; available: boolean }[] = [
 ];
 
 export default function AgendamentoPage() {
-  const { data: session } = useSession();
+  const { user } = useUser();
   const router = useRouter();
   
   const days = useMemo(() => getNextDays(14), []);
@@ -127,7 +127,7 @@ export default function AgendamentoPage() {
 
   return (
     <div className="page-container font-sans pb-32">
-      <PageHeader title="Agendar" userAvatar={{ name: session?.user?.name || "Tutor", src: session?.user?.image || undefined, href: "/cliente/perfil" }} />
+      <PageHeader title="Agendar" userAvatar={{ name: user?.name || "Tutor", src: user?.image || undefined, href: "/cliente/perfil" }} />
 
       <div className="flex flex-col gap-8 py-4">
         {/* 1. Selecionar Pet */}

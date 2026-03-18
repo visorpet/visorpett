@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useSession } from "next-auth/react";
+import { useUser } from "@/lib/supabase/useUser";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MaterialIcon } from "@/components/ui";
@@ -15,7 +15,7 @@ const SPECIES_OPTIONS = [
 ];
 
 export default function NovoPetPage() {
-  const { data: session } = useSession();
+  const { user } = useUser();
   const router = useRouter();
 
   const [species, setSpecies] = useState("");
@@ -71,8 +71,8 @@ export default function NovoPetPage() {
         title="Novo Pet"
         showBack
         userAvatar={{
-          name: session?.user?.name || "Tutor",
-          src: session?.user?.image || undefined,
+          name: user?.name || "Tutor",
+          src: user?.image || undefined,
           href: "/cliente/perfil",
         }}
       />

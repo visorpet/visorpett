@@ -1,26 +1,29 @@
 "use client";
 
 import React from "react";
-import { useSession, signOut } from "next-auth/react";
+import { useUser } from "@/lib/supabase/useUser";
+import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Avatar, Badge, MaterialIcon } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 export default function PerfilPage() {
-  const { data: session } = useSession();
+  const { user: authUser } = useUser();
   const router = useRouter();
 
   const user = {
-    name: session?.user?.name || "Tutor",
-    email: session?.user?.email || "usuario@email.com",
-    avatar: session?.user?.image,
+    name: authUser?.name || "Tutor",
+    email: authUser?.email || "usuario@email.com",
+    avatar: authUser?.image,
     referralCount: 5,
     joinedDate: "Março 2024"
   };
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: "/login" });
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
   };
 
   return (

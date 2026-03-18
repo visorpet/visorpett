@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { MaterialIcon } from "@/components/ui/MaterialIcon";
 
 export default function EsqueciSenhaPage() {
@@ -15,24 +16,17 @@ export default function EsqueciSenhaPage() {
     setLoading(true);
     setError("");
 
-    try {
-      const res = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+    const supabase = createClient();
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/redefinir-senha`,
+    });
 
-      if (res.ok) {
-        setSent(true);
-      } else {
-        const data = await res.json();
-        setError(data.error ?? "Erro ao enviar e-mail. Tente novamente.");
-      }
-    } catch {
-      setError("Erro de conexão. Tente novamente.");
-    } finally {
-      setLoading(false);
+    if (resetError) {
+      setError("Erro ao enviar e-mail. Verifique o endereço e tente novamente.");
+    } else {
+      setSent(true);
     }
+    setLoading(false);
   }
 
   return (
@@ -83,30 +77,20 @@ export default function EsqueciSenhaPage() {
             </div>
 
             {error && (
-              <p className="text-red-500 text-xs font-semibold text-center bg-red-50 p-2 rounded-lg">
-                {error}
-              </p>
+              <p className="text-red-500 text-xs font-semibold text-center bg-red-50 p-2 rounded-lg">{error}</p>
             )}
 
             <button type="submit" disabled={loading} className="btn-primary w-full">
               {loading ? (
-                <>
-                  <MaterialIcon icon="progress_activity" size="sm" className="animate-spin" />
-                  Enviando…
-                </>
+                <><MaterialIcon icon="progress_activity" size="sm" className="animate-spin" />Enviando…</>
               ) : (
-                <>
-                  Enviar link de recuperação
-                  <MaterialIcon icon="send" size="sm" />
-                </>
+                <>Enviar link de recuperação<MaterialIcon icon="send" size="sm" /></>
               )}
             </button>
 
             <p className="text-center text-sm text-gray-500 mt-4">
               Lembrou a senha?{" "}
-              <Link href="/login" className="text-primary font-bold hover:underline">
-                Voltar ao login
-              </Link>
+              <Link href="/login" className="text-primary font-bold hover:underline">Voltar ao login</Link>
             </p>
           </form>
         )}

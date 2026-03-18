@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { createClient } from "@/lib/supabase/client";
 import { MaterialIcon } from "@/components/ui/MaterialIcon";
 
 export default function CadastroPage() {
@@ -30,7 +30,6 @@ export default function CadastroPage() {
       setError("As senhas não coincidem.");
       return;
     }
-
     if (form.password.length < 6) {
       setError("A senha deve ter pelo menos 6 caracteres.");
       return;
@@ -42,12 +41,7 @@ export default function CadastroPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          password: form.password,
-          role: form.role,
-        }),
+        body: JSON.stringify({ name: form.name, email: form.email, password: form.password, role: form.role }),
       });
 
       const data = await res.json();
@@ -57,19 +51,20 @@ export default function CadastroPage() {
         return;
       }
 
-      // Auto-login após cadastro
-      const signInRes = await signIn("credentials", {
+      // Auto-login via Supabase
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email: form.email,
         password: form.password,
-        redirect: false,
       });
 
-      if (signInRes?.error) {
+      if (signInError) {
         router.push("/login");
-      } else {
-        router.push(form.role === "DONO" ? "/dono/inicio" : "/cliente/inicio");
-        router.refresh();
+        return;
       }
+
+      router.push(form.role === "DONO" ? "/dono/inicio" : "/cliente/inicio");
+      router.refresh();
     } catch {
       setError("Erro de conexão. Tente novamente.");
     } finally {
@@ -95,116 +90,53 @@ export default function CadastroPage() {
       <div className="flex-1 -mt-6 bg-bg-light rounded-t-3xl px-6 pt-8 pb-12">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="name" className="text-xs font-semibold text-gray-600 mb-1.5 block">
-              Nome completo
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              className="input"
-              placeholder="Seu nome"
-              value={form.name}
-              onChange={handleChange}
-              autoComplete="name"
-              required
-            />
+            <label htmlFor="name" className="text-xs font-semibold text-gray-600 mb-1.5 block">Nome completo</label>
+            <input id="name" name="name" type="text" className="input" placeholder="Seu nome"
+              value={form.name} onChange={handleChange} autoComplete="name" required />
           </div>
 
           <div>
-            <label htmlFor="email" className="text-xs font-semibold text-gray-600 mb-1.5 block">
-              E-mail
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              className="input"
-              placeholder="seu@email.com"
-              value={form.email}
-              onChange={handleChange}
-              autoComplete="email"
-              required
-            />
+            <label htmlFor="email" className="text-xs font-semibold text-gray-600 mb-1.5 block">E-mail</label>
+            <input id="email" name="email" type="email" className="input" placeholder="seu@email.com"
+              value={form.email} onChange={handleChange} autoComplete="email" required />
           </div>
 
           <div>
-            <label htmlFor="role" className="text-xs font-semibold text-gray-600 mb-1.5 block">
-              Tipo de conta
-            </label>
-            <select
-              id="role"
-              name="role"
-              className="input"
-              value={form.role}
-              onChange={handleChange}
-              required
-            >
+            <label htmlFor="role" className="text-xs font-semibold text-gray-600 mb-1.5 block">Tipo de conta</label>
+            <select id="role" name="role" className="input" value={form.role} onChange={handleChange} required>
               <option value="CLIENTE">Tutor de pet</option>
               <option value="DONO">Dono de pet shop</option>
             </select>
           </div>
 
           <div>
-            <label htmlFor="password" className="text-xs font-semibold text-gray-600 mb-1.5 block">
-              Senha
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              className="input"
-              placeholder="Mínimo 6 caracteres"
-              value={form.password}
-              onChange={handleChange}
-              autoComplete="new-password"
-              required
-            />
+            <label htmlFor="password" className="text-xs font-semibold text-gray-600 mb-1.5 block">Senha</label>
+            <input id="password" name="password" type="password" className="input" placeholder="Mínimo 6 caracteres"
+              value={form.password} onChange={handleChange} autoComplete="new-password" required />
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="text-xs font-semibold text-gray-600 mb-1.5 block">
-              Confirmar senha
-            </label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              className="input"
-              placeholder="Repita a senha"
-              value={form.confirmPassword}
-              onChange={handleChange}
-              autoComplete="new-password"
-              required
-            />
+            <label htmlFor="confirmPassword" className="text-xs font-semibold text-gray-600 mb-1.5 block">Confirmar senha</label>
+            <input id="confirmPassword" name="confirmPassword" type="password" className="input" placeholder="Repita a senha"
+              value={form.confirmPassword} onChange={handleChange} autoComplete="new-password" required />
           </div>
 
           {error && (
-            <p className="text-red-500 text-xs font-semibold text-center bg-red-50 p-2 rounded-lg">
-              {error}
-            </p>
+            <p className="text-red-500 text-xs font-semibold text-center bg-red-50 p-2 rounded-lg">{error}</p>
           )}
 
           <button type="submit" disabled={loading} className="btn-primary w-full">
             {loading ? (
-              <>
-                <MaterialIcon icon="progress_activity" size="sm" className="animate-spin" />
-                Criando conta…
-              </>
+              <><MaterialIcon icon="progress_activity" size="sm" className="animate-spin" />Criando conta…</>
             ) : (
-              <>
-                Criar conta
-                <MaterialIcon icon="arrow_forward" size="sm" />
-              </>
+              <>Criar conta<MaterialIcon icon="arrow_forward" size="sm" /></>
             )}
           </button>
         </form>
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Já tem conta?{" "}
-          <Link href="/login" className="text-primary font-bold hover:underline">
-            Fazer login
-          </Link>
+          <Link href="/login" className="text-primary font-bold hover:underline">Fazer login</Link>
         </p>
       </div>
     </div>

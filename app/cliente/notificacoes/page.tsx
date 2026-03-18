@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useUser } from "@/lib/supabase/useUser";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MaterialIcon, Badge } from "@/components/ui";
 import { cn, formatDate } from "@/lib/utils";
 
 export default function NotificacoesPage() {
-  const { data: session } = useSession();
+  const { user } = useUser();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -69,8 +69,8 @@ export default function NotificacoesPage() {
         title="Notificações" 
         rightAction={{ icon: "done_all", label: "Ler tudo", onClick: markAllRead }}
         userAvatar={{ 
-          name: session?.user?.name || "Tutor", 
-          src: session?.user?.image || undefined,
+          name: user?.name || "Tutor", 
+          src: user?.image || undefined,
           href: "/cliente/perfil" 
         }} 
       />

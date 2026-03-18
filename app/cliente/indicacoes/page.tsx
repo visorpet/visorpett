@@ -1,15 +1,15 @@
 "use client";
 
 import React from "react";
-import { useSession } from "next-auth/react";
+import { useUser } from "@/lib/supabase/useUser";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MaterialIcon } from "@/components/ui";
 
 export default function IndicacoesPage() {
-  const { data: session } = useSession();
+  const { user } = useUser();
 
-  const referralCode = "VISO-" + (session?.user?.name?.toUpperCase().slice(0, 4) || "USER");
+  const referralCode = "VISO-" + (user?.name?.toUpperCase().slice(0, 4) || "USER");
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(referralCode);
@@ -21,8 +21,8 @@ export default function IndicacoesPage() {
         title="Indicações"
         showBack
         userAvatar={{
-          name: session?.user?.name || "Tutor",
-          src: session?.user?.image || undefined,
+          name: user?.name || "Tutor",
+          src: user?.image || undefined,
           href: "/cliente/perfil",
         }}
       />

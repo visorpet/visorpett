@@ -1,9 +1,6 @@
-import { getToken } from "next-auth/jwt";
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-
-// Rotas que exigem autenticação mas não exigem papel específico
-const AUTH_ROUTES = ["/cliente", "/dono", "/admin"];
 
 // Mapeamento: path prefix → papel necessário
 const ROLE_ROUTES: Record<string, string> = {
@@ -13,28 +10,50 @@ const ROLE_ROUTES: Record<string, string> = {
 };
 
 // Rotas públicas (sem autenticação)
-const PUBLIC_ROUTES = ["/login", "/", "/api/webhooks"];
+const PUBLIC_ROUTES = ["/login", "/cadastro", "/esqueci-senha", "/redefinir-senha", "/", "/api/webhooks"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Libera rotas públicas e assets
   if (
-    PUBLIC_ROUTES.some((r) => pathname.startsWith(r)) ||
+    PUBLIC_ROUTES.some((r) => pathname === r || pathname.startsWith(r + "/")) ||
     pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon")
+    pathname.startsWith("/favicon") ||
+    pathname.startsWith("/api/auth/")
   ) {
     return NextResponse.next();
   }
 
-  // Verifica o token JWT
-  const token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  let response = NextResponse.next({ request });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          response = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   // Sem sessão → redireciona para login
-  if (!token) {
+  if (!user) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
@@ -47,10 +66,9 @@ export async function middleware(request: NextRequest) {
 
   if (matchedPrefix) {
     const requiredRole = ROLE_ROUTES[matchedPrefix];
-    const userRole     = (token as any).role;
+    const userRole = user.user_metadata?.role as string | undefined;
 
-    if (userRole !== requiredRole) {
-      // Redireciona para o painel correto do papel do usuário
+    if (userRole && userRole !== requiredRole) {
       const redirectMap: Record<string, string> = {
         CLIENTE:     "/cliente/inicio",
         DONO:        "/dono/inicio",
@@ -62,7 +80,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {

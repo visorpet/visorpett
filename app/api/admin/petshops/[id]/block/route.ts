@@ -1,31 +1,21 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 
-// API que recebe o ID pela URL [id] ou envia o bloqueio/cancelamento da Assinatura
-export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-    }
-
-    const role = (session.user as any).role;
-    if (role !== "SUPER_ADMIN") {
+    if (session.user.role !== "SUPER_ADMIN") {
       return NextResponse.json({ error: "Acesso reservado via Super Admin" }, { status: 403 });
     }
 
-    const { status } = await request.json(); // Pega a string de status 
-    
-    // Altera a Assinatura vinculada ao PetShop (Isso bloqueia o uso real da plataforma no middleware futuro)
-    const petShop = await db.subscription.update({
+    const { status } = await request.json();
+
+    await db.subscription.update({
       where: { petShopId: params.id },
-      data: { status: status }, 
+      data: { status },
     });
 
     return NextResponse.json({ success: true, statusAtualizado: status });

@@ -1,34 +1,25 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { clientSchema } from "@/lib/validations/client";
 import { z } from "zod";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-    }
+    const { role, petShopId } = session.user;
 
-    const petShopId = (session.user as any).petShopId;
-
-    if (!petShopId) {
-      return NextResponse.json({ error: "Você não possui um pet shop" }, { status: 403 });
-    }
-
-    const role = (session.user as any).role;
+    if (!petShopId) return NextResponse.json({ error: "Você não possui um pet shop" }, { status: 403 });
     if (role !== "DONO" && role !== "SUPER_ADMIN") {
       return NextResponse.json({ error: "Acesso restrito para Donos" }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search");
-
     const extraFilters: any = {};
     if (search) {
       extraFilters.OR = [
@@ -40,11 +31,7 @@ export async function GET(request: Request) {
     const clients = await db.client.findMany({
       where: { petShopId, ...extraFilters },
       include: {
-        pets: {
-          include: {
-            appointments: { orderBy: { date: "desc" }, take: 1 }
-          }
-        }
+        pets: { include: { appointments: { orderBy: { date: "desc" }, take: 1 } } },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -58,19 +45,14 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-    }
-
-    const role = (session.user as any).role;
-    const petShopId = (session.user as any).petShopId;
+    const { role, petShopId } = session.user;
 
     if (role !== "DONO" && role !== "SUPER_ADMIN") {
       return NextResponse.json({ error: "Acesso restrito para Donos" }, { status: 403 });
     }
-
     if (!petShopId) {
       return NextResponse.json({ error: "Você não possui um pet shop associado" }, { status: 403 });
     }
@@ -82,15 +64,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Você só pode criar clientes para o seu pet shop" }, { status: 403 });
     }
 
-    // Tentar encontrar um usuário com o mesmo e-mail para linkar (se tiver email)
     let linkedUserId = null;
     if (parsedData.email) {
-      const existingUser = await db.user.findUnique({
-        where: { email: parsedData.email }
-      });
-      if (existingUser) {
-        linkedUserId = existingUser.id;
-      }
+      const existingUser = await db.user.findUnique({ where: { email: parsedData.email } });
+      if (existingUser) linkedUserId = existingUser.id;
     }
 
     const newClient = await db.client.create({
@@ -98,7 +75,7 @@ export async function POST(request: Request) {
         name: parsedData.name,
         email: parsedData.email,
         phone: parsedData.phone,
-        petShopId: petShopId,
+        petShopId,
         userId: linkedUserId,
       },
     });
@@ -106,10 +83,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ data: newClient }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Erro de validação", details: error.issues },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Erro de validação", details: error.issues }, { status: 400 });
     }
     console.error("Error creating client:", error);
     return NextResponse.json({ error: "Erro interno", details: error }, { status: 500 });
