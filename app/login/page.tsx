@@ -147,52 +147,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Demo access */}
-        <div className="mt-8 p-4 bg-primary/5 rounded-xl border border-primary/10">
-          <p className="text-xs font-bold text-primary mb-3 text-center uppercase tracking-wide">
-            🚀 Acesso Rápido (Demo)
-          </p>
-          <div className="flex flex-col gap-2">
-            <Link
-              href="/cliente/inicio"
-              className="flex items-center justify-between px-4 py-2.5 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-card-hover transition-all duration-200 group"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <MaterialIcon icon="pets" size="xs" className="text-primary" />
-                </div>
-                <span className="text-sm font-semibold text-gray-800">Tutor / Cliente</span>
-              </div>
-              <MaterialIcon icon="chevron_right" size="sm" className="text-gray-400 group-hover:text-primary transition-colors" />
-            </Link>
-
-            <Link
-              href="/dono/inicio"
-              className="flex items-center justify-between px-4 py-2.5 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-card-hover transition-all duration-200 group"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 bg-emerald-100 rounded-lg flex items-center justify-center">
-                  <MaterialIcon icon="storefront" size="xs" className="text-emerald-600" />
-                </div>
-                <span className="text-sm font-semibold text-gray-800">Dono de Pet Shop</span>
-              </div>
-              <MaterialIcon icon="chevron_right" size="sm" className="text-gray-400 group-hover:text-emerald-600 transition-colors" />
-            </Link>
-
-            <Link
-              href="/admin/painel"
-              className="flex items-center justify-between px-4 py-2.5 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-card-hover transition-all duration-200 group"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <MaterialIcon icon="admin_panel_settings" size="xs" className="text-purple-600" />
-                </div>
-                <span className="text-sm font-semibold text-gray-800">Super Admin</span>
-              </div>
-              <MaterialIcon icon="chevron_right" size="sm" className="text-gray-400 group-hover:text-purple-600 transition-colors" />
-            </Link>
-          </div>
-        </div>
 
         {/* Register */}
         <p className="text-center text-sm text-gray-500 mt-6">
