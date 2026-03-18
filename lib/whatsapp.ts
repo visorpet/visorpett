@@ -55,11 +55,38 @@ export function buildWhatsAppLink(phone: string, message: string): string {
   return `https://wa.me/${formatted}?text=${encodeURIComponent(message)}`;
 }
 
+/* ─── Lê config da DB quando env vars não estiverem definidas ─── */
+async function getEvolutionConfig() {
+  const envUrl = process.env.EVOLUTION_API_URL;
+  const envKey = process.env.EVOLUTION_API_KEY;
+  const envInst = process.env.EVOLUTION_INSTANCE;
+
+  if (envUrl && envKey) {
+    return { apiUrl: envUrl, apiKey: envKey, instance: envInst ?? "visorpet" };
+  }
+
+  // Fallback: lê do banco (SystemConfig)
+  try {
+    const { createAdminClient } = await import("@/lib/supabase/admin");
+    const db = createAdminClient();
+    const { data } = await db
+      .from("SystemConfig")
+      .select("key, value")
+      .in("key", ["EVOLUTION_API_URL", "EVOLUTION_API_KEY", "EVOLUTION_INSTANCE"]);
+    const map = Object.fromEntries((data ?? []).map((r: { key: string; value: string }) => [r.key, r.value]));
+    return {
+      apiUrl:   map["EVOLUTION_API_URL"]  || "",
+      apiKey:   map["EVOLUTION_API_KEY"]  || "",
+      instance: map["EVOLUTION_INSTANCE"] || "visorpet",
+    };
+  } catch {
+    return { apiUrl: "", apiKey: "", instance: "visorpet" };
+  }
+}
+
 /* ─── Auto-envio via Evolution API (quando configurado) ─── */
 export async function sendWhatsAppMessage(phone: string, message: string): Promise<boolean> {
-  const apiUrl = process.env.EVOLUTION_API_URL;
-  const apiKey = process.env.EVOLUTION_API_KEY;
-  const instance = process.env.EVOLUTION_INSTANCE ?? "visorpet";
+  const { apiUrl, apiKey, instance } = await getEvolutionConfig();
 
   if (!apiUrl || !apiKey) return false; // fallback: envio manual
 
