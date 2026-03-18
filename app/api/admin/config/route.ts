@@ -7,6 +7,8 @@ const ALLOWED_KEYS = [
   "EVOLUTION_API_KEY",
   "EVOLUTION_INSTANCE",
   "CRON_SECRET",
+  "ASAAS_API_KEY",
+  "ASAAS_SANDBOX",
 ] as const;
 
 export async function GET() {
@@ -24,9 +26,12 @@ export async function GET() {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   const config = Object.fromEntries((data ?? []).map((r) => [r.key, r.value]));
-  // Mask API key value
+  // Mask sensitive keys
   if (config["EVOLUTION_API_KEY"]) {
     config["EVOLUTION_API_KEY_MASKED"] = "••••••••" + config["EVOLUTION_API_KEY"].slice(-4);
+  }
+  if (config["ASAAS_API_KEY"]) {
+    config["ASAAS_API_KEY_MASKED"] = "••••••••" + config["ASAAS_API_KEY"].slice(-4);
   }
   return NextResponse.json(config);
 }

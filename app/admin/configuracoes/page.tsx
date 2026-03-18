@@ -9,6 +9,9 @@ type Config = {
   EVOLUTION_API_KEY_MASKED?: string;
   EVOLUTION_INSTANCE?: string;
   CRON_SECRET?: string;
+  ASAAS_API_KEY?: string;
+  ASAAS_API_KEY_MASKED?: string;
+  ASAAS_SANDBOX?: string;
 };
 
 export default function SuperAdminConfiguracoesPage() {
@@ -18,7 +21,9 @@ export default function SuperAdminConfiguracoesPage() {
   const [saving, setSaving]     = useState(false);
   const [saved, setSaved]       = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
+  const [showAsaasKey, setShowAsaasKey] = useState(false);
   const [testStatus, setTestStatus] = useState<"idle" | "testing" | "ok" | "fail">("idle");
+  const [asaasTestStatus, setAsaasTestStatus] = useState<"idle" | "testing" | "ok" | "fail">("idle");
 
   useEffect(() => {
     fetch("/api/admin/config")
@@ -30,6 +35,8 @@ export default function SuperAdminConfiguracoesPage() {
           EVOLUTION_API_KEY:  "",
           EVOLUTION_INSTANCE: data.EVOLUTION_INSTANCE ?? "visorpet",
           CRON_SECRET:        data.CRON_SECRET        ?? "",
+          ASAAS_API_KEY:      "",
+          ASAAS_SANDBOX:      data.ASAAS_SANDBOX      ?? "true",
         });
         setLoading(false);
       });
@@ -41,10 +48,14 @@ export default function SuperAdminConfiguracoesPage() {
       EVOLUTION_API_URL:  form.EVOLUTION_API_URL,
       EVOLUTION_INSTANCE: form.EVOLUTION_INSTANCE,
       CRON_SECRET:        form.CRON_SECRET,
+      ASAAS_SANDBOX:      form.ASAAS_SANDBOX,
     };
-    // Only send API key if user typed something new
+    // Only send API keys if user typed something new
     if (form.EVOLUTION_API_KEY) {
       payload.EVOLUTION_API_KEY = form.EVOLUTION_API_KEY;
+    }
+    if (form.ASAAS_API_KEY) {
+      payload.ASAAS_API_KEY = form.ASAAS_API_KEY;
     }
     await fetch("/api/admin/config", {
       method: "POST",
@@ -67,7 +78,19 @@ export default function SuperAdminConfiguracoesPage() {
     setTimeout(() => setTestStatus("idle"), 4000);
   }
 
+  async function handleTestAsaas() {
+    setAsaasTestStatus("testing");
+    try {
+      const res = await fetch("/api/admin/config/test-asaas", { method: "POST" });
+      setAsaasTestStatus(res.ok ? "ok" : "fail");
+    } catch {
+      setAsaasTestStatus("fail");
+    }
+    setTimeout(() => setAsaasTestStatus("idle"), 4000);
+  }
+
   const isEvolutionConfigured = !!(config.EVOLUTION_API_URL && config.EVOLUTION_API_KEY_MASKED);
+  const isAsaasConfigured = !!config.ASAAS_API_KEY_MASKED;
 
   if (loading) {
     return (
@@ -232,34 +255,127 @@ export default function SuperAdminConfiguracoesPage() {
           </div>
         </div>
 
-        {/* Gateway de Pagamento */}
+        {/* Gateway de Pagamento — Asaas */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <MaterialIcon icon="credit_card" className="text-primary" /> Gateway de Pagamento
-            </h3>
-            <p className="text-gray-500 text-sm mt-1">Integração do Stripe e split de pagamentos.</p>
-          </div>
-          <div className="p-6 space-y-4">
+          <div className="p-6 border-b border-gray-100 flex items-start justify-between">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Stripe Secret Key</label>
-              <input
-                type="password"
-                defaultValue=""
-                placeholder="sk_live_... (em breve)"
-                readOnly
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg text-sm p-3 text-gray-400 focus:outline-none"
-              />
+              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <MaterialIcon icon="credit_card" className="text-primary" /> Gateway de Pagamento — Asaas
+              </h3>
+              <p className="text-gray-500 text-sm mt-1">
+                Cobrança automática das assinaturas via PIX, boleto ou cartão de crédito.
+              </p>
             </div>
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+            <span
+              className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+                isAsaasConfigured
+                  ? "bg-green-50 text-green-700"
+                  : "bg-yellow-50 text-yellow-700"
+              }`}
+            >
+              {isAsaasConfigured ? "Configurado" : "Pendente"}
+            </span>
+          </div>
+
+          <div className="p-6 space-y-5">
+            {!isAsaasConfigured && (
+              <div className="flex gap-3 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                <MaterialIcon icon="info" className="text-blue-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-blue-800">
+                  Configure sua <strong>API Key do Asaas</strong> para habilitar a cobrança automática dos planos PRO e Premium.
+                  Acesse{" "}
+                  <a href="https://app.asaas.com/config/integrations" target="_blank" rel="noopener noreferrer" className="underline font-semibold">
+                    asaas.com → Configurações → Integrações
+                  </a>{" "}
+                  para obter a chave.
+                </p>
+              </div>
+            )}
+
+            {/* API Key */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                API Key
+                {config.ASAAS_API_KEY_MASKED && (
+                  <span className="ml-2 text-xs font-normal text-gray-400">
+                    (salvo: {config.ASAAS_API_KEY_MASKED})
+                  </span>
+                )}
+              </label>
+              <div className="relative">
+                <input
+                  type={showAsaasKey ? "text" : "password"}
+                  value={form.ASAAS_API_KEY ?? ""}
+                  onChange={(e) => setForm((f) => ({ ...f, ASAAS_API_KEY: e.target.value }))}
+                  placeholder={config.ASAAS_API_KEY_MASKED ? "Deixe em branco para manter a atual" : "$aact_... (cole sua chave aqui)"}
+                  className="w-full border border-gray-200 rounded-lg text-sm p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowAsaasKey((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <MaterialIcon icon={showAsaasKey ? "visibility_off" : "visibility"} size="sm" />
+                </button>
+              </div>
+              <p className="text-xs text-gray-400 mt-1">
+                Chave de produção começa com <code className="bg-gray-100 px-1 rounded">$aact_</code> — chave sandbox começa com <code className="bg-gray-100 px-1 rounded">$aact_YTU5YTE0M</code>.
+              </p>
+            </div>
+
+            {/* Sandbox toggle */}
+            <div
+              className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 cursor-pointer"
+              onClick={() => setForm((f) => ({ ...f, ASAAS_SANDBOX: f.ASAAS_SANDBOX === "true" ? "false" : "true" }))}
+            >
               <div>
-                <p className="font-bold text-sm text-gray-900">Modo de Teste (Sandbox)</p>
-                <p className="text-xs text-gray-500">Transações não serão cobradas de verdade.</p>
+                <p className="font-bold text-sm text-gray-900">Modo Sandbox (Testes)</p>
+                <p className="text-xs text-gray-500">
+                  {form.ASAAS_SANDBOX === "true"
+                    ? "Ativo — cobranças não são processadas de verdade."
+                    : "Desativado — cobranças reais serão processadas."}
+                </p>
               </div>
-              <div className="w-12 h-6 bg-gray-300 rounded-full relative cursor-not-allowed">
-                <div className="w-5 h-5 bg-white rounded-full absolute left-0.5 top-0.5 shadow-sm" />
+              <div
+                className={`w-12 h-6 rounded-full relative transition-colors ${
+                  form.ASAAS_SANDBOX === "true" ? "bg-primary" : "bg-gray-300"
+                }`}
+              >
+                <div
+                  className={`w-5 h-5 bg-white rounded-full absolute top-0.5 shadow-sm transition-transform ${
+                    form.ASAAS_SANDBOX === "true" ? "translate-x-6" : "translate-x-0.5"
+                  }`}
+                />
               </div>
             </div>
+
+            {/* Botão de teste */}
+            {isAsaasConfigured && (
+              <button
+                onClick={handleTestAsaas}
+                disabled={asaasTestStatus === "testing"}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
+              >
+                <MaterialIcon
+                  icon={
+                    asaasTestStatus === "testing" ? "sync" :
+                    asaasTestStatus === "ok"      ? "check_circle" :
+                    asaasTestStatus === "fail"    ? "error" :
+                    "wifi_tethering"
+                  }
+                  className={
+                    asaasTestStatus === "ok"   ? "text-green-600" :
+                    asaasTestStatus === "fail" ? "text-red-500"   :
+                    "text-gray-500"
+                  }
+                  size="sm"
+                />
+                {asaasTestStatus === "testing" ? "Verificando..." :
+                 asaasTestStatus === "ok"      ? "Conta conectada!" :
+                 asaasTestStatus === "fail"    ? "Falhou — verifique a chave" :
+                 "Testar conexão"}
+              </button>
+            )}
           </div>
         </div>
 
