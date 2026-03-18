@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { db } from "@/lib/db";
 
 export async function POST(req: Request) {
   try {
@@ -16,18 +15,20 @@ export async function POST(req: Request) {
     const allowedRoles = ["CLIENTE", "DONO"];
     const userRole: "CLIENTE" | "DONO" = allowedRoles.includes(role) ? role : "CLIENTE";
 
-    // Verificar e-mail duplicado no Prisma
-    const existing = await db.user.findUnique({ where: { email } });
+    const supabase = createAdminClient();
+
+    // Verificar e-mail duplicado via Auth
+    const { data: listData } = await supabase.auth.admin.listUsers();
+    const existing = listData?.users?.find((u) => u.email === email);
     if (existing) {
       return NextResponse.json({ error: "Este e-mail já está em uso." }, { status: 409 });
     }
 
-    // Criar usuário no Supabase Auth (via admin — sem e-mail de confirmação)
-    const supabaseAdmin = createAdminClient();
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    // Criar usuário no Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password,
-      email_confirm: true, // Confirma automaticamente sem precisar de e-mail
+      email_confirm: true,
       user_metadata: { name, role: userRole },
     });
 
@@ -35,16 +36,6 @@ export async function POST(req: Request) {
       console.error("[register] Supabase error:", authError);
       return NextResponse.json({ error: authError?.message ?? "Erro ao criar conta." }, { status: 400 });
     }
-
-    // Criar perfil no Prisma usando o UUID do Supabase como ID
-    await db.user.create({
-      data: {
-        id: authData.user.id,
-        name,
-        email,
-        role: userRole,
-      },
-    });
 
     return NextResponse.json({ id: authData.user.id }, { status: 201 });
   } catch (err) {

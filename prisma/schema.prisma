@@ -142,14 +142,14 @@ model Pet {
   weight       Float?
   photoUrl     String?
   notes        String?
-  clientId     String
+  clientId     String?
   ownerId      String?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   appointments Appointment[]
   medicalNotes MedicalNote[]
   messageLogs  MessageLog[]
-  client       Client        @relation(fields: [clientId], references: [id])
+  client       Client?       @relation(fields: [clientId], references: [id])
   owner        User?         @relation(fields: [ownerId], references: [id])
   vaccines     Vaccine[]
 
