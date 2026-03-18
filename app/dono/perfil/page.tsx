@@ -1,10 +1,27 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MaterialIcon, Avatar } from "@/components/ui";
+import { createClient } from "@/lib/supabase/client";
 
-function MenuItem({ icon, label, badge, danger, href, onClick }: { icon: string, label: string, badge?: string, danger?: boolean, href?: string, onClick?: () => void }) {
+type PetShop = {
+  name: string;
+  subscription?: { plan: string; status: string } | null;
+};
+
+const PLAN_LABELS: Record<string, string> = {
+  FREE: "Plano Free",
+  PRO: "Plano Pro",
+  PREMIUM: "Plano Premium",
+  ENTERPRISE: "Plano Enterprise",
+};
+
+function MenuItem({ icon, label, badge, danger, href, onClick }: {
+  icon: string; label: string; badge?: string; danger?: boolean; href?: string; onClick?: () => void;
+}) {
   const content = (
     <div className={`flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-100 shadow-sm ${danger ? "text-red-500 hover:border-red-200" : "text-gray-800 hover:shadow-card-hover"} transition-all duration-200 cursor-pointer`}>
       <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${danger ? "bg-red-50" : "bg-primary/10"}`}>
@@ -20,16 +37,44 @@ function MenuItem({ icon, label, badge, danger, href, onClick }: { icon: string,
 }
 
 export default function DonoPerfilPage() {
+  const router = useRouter();
+  const [shop, setShop] = useState<PetShop | null>(null);
+  const [groomerCount, setGroomerCount] = useState(0);
+
+  useEffect(() => {
+    fetch("/api/petshops/me")
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.data) {
+          setShop(json.data);
+          setGroomerCount(json.data.groomers?.length ?? 0);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  async function handleSignOut() {
+    if (!confirm("Tem certeza que deseja sair?")) return;
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+  }
+
+  const shopName = shop?.name ?? "Meu Pet Shop";
+  const planLabel = shop?.subscription
+    ? PLAN_LABELS[shop.subscription.plan] ?? shop.subscription.plan
+    : "Plano Free";
+
   return (
     <div className="page-container">
       <PageHeader title="Meu Negócio" />
 
       <section className="animate-slide-up mb-6">
         <div className="bg-gradient-primary rounded-2xl p-6 text-white flex gap-4 items-center">
-          <Avatar name="PetLove Moema" size="lg" ring ringColor="ring-white/40" />
+          <Avatar name={shopName} size="lg" ring ringColor="ring-white/40" />
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-black truncate">PetLove Moema</h1>
-            <p className="text-white/70 text-xs mt-1">Plano Pro • Ativo</p>
+            <h1 className="text-xl font-black truncate">{shopName}</h1>
+            <p className="text-white/70 text-xs mt-1">{planLabel} • Ativo</p>
           </div>
           <MaterialIcon icon="qr_code_2" size="xl" className="text-white/80" />
         </div>
@@ -41,7 +86,7 @@ export default function DonoPerfilPage() {
           <div className="flex flex-col gap-2">
             <MenuItem icon="storefront" label="Dados do Pet Shop" href="/dono/perfil/dados" />
             <MenuItem icon="inventory_2" label="Serviços e Preços" href="/dono/perfil/servicos" />
-            <MenuItem icon="badge" label="Equipe e Tosadores" badge="3" href="/dono/perfil/equipe" />
+            <MenuItem icon="badge" label="Equipe e Tosadores" badge={groomerCount > 0 ? String(groomerCount) : undefined} href="/dono/perfil/equipe" />
             <MenuItem icon="schedule" label="Horários de Funcionamento" href="/dono/perfil/horarios" />
           </div>
         </div>
@@ -58,11 +103,11 @@ export default function DonoPerfilPage() {
           <p className="section-label mb-3">Sistema</p>
           <div className="flex flex-col gap-2">
             <MenuItem icon="help" label="Central de Ajuda" href="/dono/ajuda" />
-            <MenuItem icon="logout" label="Sair da Conta" danger onClick={() => { if(confirm("Tem certeza que deseja sair?")) { window.location.href="/login"; } }} />
+            <MenuItem icon="logout" label="Sair da Conta" danger onClick={handleSignOut} />
           </div>
         </div>
       </section>
-      
+
       <p className="text-center text-xs text-gray-300 pb-4 mt-6">
         visorpet v1.0 — Área do Dono 🐾
       </p>
