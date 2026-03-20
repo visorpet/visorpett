@@ -61,10 +61,12 @@ export default function BookingPage() {
   const [timeSlots,   setTimeSlots]   = useState<string[]>([]);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [loadingSlots, setLoadingSlots] = useState(false);
-  const [clientName,  setClientName]  = useState("");
-  const [clientPhone, setClientPhone] = useState("");
-  const [clientEmail, setClientEmail] = useState("");
-  const [notes, setNotes] = useState("");
+  const [clientName,    setClientName]    = useState("");
+  const [clientPhone,   setClientPhone]   = useState("");
+  const [clientEmail,   setClientEmail]   = useState("");
+  const [notes,         setNotes]         = useState("");
+  const [deliveryType,  setDeliveryType]  = useState<"levar" | "buscar">("levar");
+  const [clientAddress, setClientAddress] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState<{
@@ -108,6 +110,11 @@ export default function BookingPage() {
     const dateObj = new Date(selectedDay);
     dateObj.setUTCHours(Number(h), 0, 0, 0);
 
+    const deliveryNote = deliveryType === "buscar"
+      ? `🚗 Buscar em casa: ${clientAddress}`
+      : `🏪 Cliente leva o pet`;
+    const fullNotes = [deliveryNote, notes.trim()].filter(Boolean).join("\n");
+
     const res = await fetch(`/api/booking/${slug}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -116,7 +123,7 @@ export default function BookingPage() {
         petName, petSpecies, petBreed,
         serviceId: service.id,
         date: dateObj.toISOString(),
-        notes,
+        notes: fullNotes,
       }),
     });
 
@@ -176,6 +183,7 @@ export default function BookingPage() {
               <Row icon="calendar_today" label="Data"      value={aptDate.toLocaleDateString("pt-BR", { weekday:"long", day:"numeric", month:"long" })} />
               <Row icon="schedule"       label="Horário"   value={aptDate.toLocaleTimeString("pt-BR", { hour:"2-digit", minute:"2-digit" })} />
               <Row icon="payments"       label="Valor"     value={`R$ ${confirmed.appointment.totalPrice.toFixed(2).replace(".", ",")}`} />
+              <Row icon={deliveryType === "buscar" ? "directions_car" : "storefront"} label="Entrega" value={deliveryType === "buscar" ? `Busca em casa — ${clientAddress}` : "Você leva o pet"} />
             </div>
 
             <p className="text-xs text-gray-400 mb-2">
@@ -509,6 +517,62 @@ export default function BookingPage() {
               />
             </div>
 
+            {/* Entrega */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Como será a entrega do pet? <span className="text-red-500">*</span>
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDeliveryType("levar")}
+                  className={`flex flex-col items-center gap-1.5 p-4 rounded-2xl border-2 transition-all ${
+                    deliveryType === "levar"
+                      ? "border-primary bg-primary/5"
+                      : "border-gray-100 bg-white hover:border-gray-200"
+                  }`}
+                >
+                  <span className="text-2xl">🏪</span>
+                  <span className={`text-xs font-semibold ${deliveryType === "levar" ? "text-primary" : "text-gray-700"}`}>
+                    Vou levar
+                  </span>
+                  <span className="text-[10px] text-gray-400 text-center leading-tight">Levo meu pet ao pet shop</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDeliveryType("buscar")}
+                  className={`flex flex-col items-center gap-1.5 p-4 rounded-2xl border-2 transition-all ${
+                    deliveryType === "buscar"
+                      ? "border-primary bg-primary/5"
+                      : "border-gray-100 bg-white hover:border-gray-200"
+                  }`}
+                >
+                  <span className="text-2xl">🚗</span>
+                  <span className={`text-xs font-semibold ${deliveryType === "buscar" ? "text-primary" : "text-gray-700"}`}>
+                    Buscar em casa
+                  </span>
+                  <span className="text-[10px] text-gray-400 text-center leading-tight">Pet shop busca e entrega</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Endereço — obrigatório se buscar em casa */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                Seu endereço{" "}
+                {deliveryType === "buscar"
+                  ? <span className="text-red-500">*</span>
+                  : <span className="text-gray-400 font-normal text-xs">(opcional)</span>
+                }
+              </label>
+              <input
+                className="input w-full"
+                placeholder="Rua, número, bairro, cidade..."
+                value={clientAddress}
+                onChange={e => setClientAddress(e.target.value)}
+              />
+            </div>
+
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                 E-mail <span className="text-gray-400 font-normal text-xs">(opcional)</span>
@@ -548,7 +612,7 @@ export default function BookingPage() {
               </button>
               <button
                 type="button"
-                disabled={!clientName.trim() || !clientPhone.trim() || submitting}
+                disabled={!clientName.trim() || !clientPhone.trim() || (deliveryType === "buscar" && !clientAddress.trim()) || submitting}
                 onClick={handleSubmit}
                 className="btn-primary flex-1"
               >
