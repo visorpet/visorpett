@@ -99,11 +99,15 @@ export async function POST(request: Request) {
 
     const { data: service } = await db
       .from("Service")
-      .select("id, price")
+      .select("id, price, petShopId")
       .eq("id", parsedData.serviceId)
       .maybeSingle();
 
     if (!service) return NextResponse.json({ error: "Serviço não encontrado" }, { status: 404 });
+
+    if (service.petShopId !== parsedData.petShopId) {
+      return NextResponse.json({ error: "Serviço não pertence ao pet shop informado" }, { status: 403 });
+    }
 
     const { data: appointment, error } = await db
       .from("Appointment")
@@ -117,6 +121,7 @@ export async function POST(request: Request) {
         notes: parsedData.notes ?? null,
         totalPrice: service.price,
         status: "agendado",
+        createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       })
       .select()

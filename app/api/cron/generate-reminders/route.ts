@@ -9,8 +9,7 @@ export async function GET(request: Request) {
     // 1. Autorização (Verifica se é o Cron ou se temos o secret válido)
     const authHeader = request.headers.get("authorization");
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-      // return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-      // Remover comentário de segurança após configurar o CRON_SECRET no app/Vercel
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
     // 2. Busca agendamentos antigos (mock de lógica do plano)
