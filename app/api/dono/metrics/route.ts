@@ -20,6 +20,10 @@ export async function GET() {
     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
+    // Busca clientIds separado para não quebrar o Promise.all com await interno
+    const { data: shopClients } = await db.from("Client").select("id").eq("petShopId", petShopId);
+    const clientIds = shopClients?.map((c: { id: string }) => c.id) ?? [];
+
     const [
       { data: todayApts },
       { data: monthApts },
@@ -48,11 +52,9 @@ export async function GET() {
         .eq("status", "em_atendimento"),
 
       // Total de pets cadastrados no petshop
-      db.from("Pet")
-        .select("id, clientId")
-        .in("clientId",
-          (await db.from("Client").select("id").eq("petShopId", petShopId)).data?.map((c: { id: string }) => c.id) ?? []
-        ),
+      clientIds.length
+        ? db.from("Pet").select("id, clientId").in("clientId", clientIds)
+        : Promise.resolve({ data: [] }),
 
       // Pets com visita nos últimos 30 dias
       db.from("Appointment")

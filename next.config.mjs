@@ -10,7 +10,10 @@ const nextConfig = {
     formats: ["image/avif", "image/webp"],
   },
   experimental: {
-    optimizePackageImports: [],
+    optimizePackageImports: ["@supabase/supabase-js", "zod", "date-fns"],
+  },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
   },
 };
 

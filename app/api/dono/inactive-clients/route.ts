@@ -18,22 +18,16 @@ export async function GET() {
     const db = createAdminClient();
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Busca clients do petshop
-    const { data: clients } = await db
-      .from("Client")
-      .select("id, name, phone")
-      .eq("petShopId", petShopId);
+    // Query 1: clientes + agendamentos recentes em paralelo
+    const [{ data: clients }, { data: recentApts }] = await Promise.all([
+      db.from("Client").select("id, name, phone").eq("petShopId", petShopId),
+      db.from("Appointment")
+        .select("petId, date, pet:Pet!petId(clientId)")
+        .eq("petShopId", petShopId)
+        .gte("date", thirtyDaysAgo),
+    ]);
 
     if (!clients?.length) return NextResponse.json({ data: [] });
-
-    const clientIds = clients.map((c: { id: string }) => c.id);
-
-    // Busca pets com visita recente — PostgREST retorna pet como array
-    const { data: recentApts } = await db
-      .from("Appointment")
-      .select("petId, date, pet:Pet!petId(clientId)")
-      .eq("petShopId", petShopId)
-      .gte("date", thirtyDaysAgo);
 
     const activeClientIds = new Set(
       (recentApts ?? [])
@@ -44,42 +38,50 @@ export async function GET() {
         .filter(Boolean)
     );
 
-    // Clientes sem visita nos últimos 30 dias
     const inactiveClients = clients
       .filter((c: { id: string }) => !activeClientIds.has(c.id))
-      .slice(0, 5); // retorna até 5 para exibir na automação
+      .slice(0, 5);
 
-    // Para cada cliente inativo, busca o último pet
-    const result = await Promise.all(
-      inactiveClients.map(async (client: { id: string; name: string; phone: string }) => {
-        const { data: pets } = await db
-          .from("Pet")
-          .select("id, name")
-          .eq("clientId", client.id)
-          .limit(1);
+    if (!inactiveClients.length) return NextResponse.json({ data: [] });
 
-        const { data: lastApt } = await db
-          .from("Appointment")
-          .select("date")
-          .eq("petShopId", petShopId)
-          .in("petId", pets?.map((p: { id: string }) => p.id) ?? [])
-          .order("date", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+    const inactiveIds = inactiveClients.map((c: { id: string }) => c.id);
 
-        const daysSince = lastApt
-          ? Math.floor((Date.now() - new Date(lastApt.date).getTime()) / (1000 * 60 * 60 * 24))
-          : null;
+    // Query 2+3: busca pets e últimos agendamentos em paralelo (batch único)
+    const [{ data: allPets }, { data: allLastApts }] = await Promise.all([
+      db.from("Pet").select("id, name, clientId").in("clientId", inactiveIds),
+      db.from("Appointment")
+        .select("petId, date")
+        .eq("petShopId", petShopId)
+        .order("date", { ascending: false }),
+    ]);
 
-        return {
-          clientId:   client.id,
-          clientName: client.name,
-          phone:      client.phone,
-          petName:    pets?.[0]?.name ?? "Pet",
-          daysSince,
-        };
-      })
-    );
+    // Mapeia petId → date para lookup O(1)
+    const lastAptByPet = new Map<string, string>();
+    for (const apt of allLastApts ?? []) {
+      if (!lastAptByPet.has(apt.petId)) lastAptByPet.set(apt.petId, apt.date);
+    }
+
+    // Mapeia clientId → primeiro pet
+    const petByClient = new Map<string, { id: string; name: string }>();
+    for (const pet of allPets ?? []) {
+      if (!petByClient.has(pet.clientId)) petByClient.set(pet.clientId, { id: pet.id, name: pet.name });
+    }
+
+    const result = inactiveClients.map((client: { id: string; name: string; phone: string }) => {
+      const pet = petByClient.get(client.id);
+      const lastAptDate = pet ? lastAptByPet.get(pet.id) : undefined;
+      const daysSince = lastAptDate
+        ? Math.floor((Date.now() - new Date(lastAptDate).getTime()) / (1000 * 60 * 60 * 24))
+        : null;
+
+      return {
+        clientId:   client.id,
+        clientName: client.name,
+        phone:      client.phone,
+        petName:    pet?.name ?? "Pet",
+        daysSince,
+      };
+    });
 
     return NextResponse.json({ data: result });
   } catch (error) {
