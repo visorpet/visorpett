@@ -31,6 +31,14 @@
     {
       "path": "/api/cron/pos-atendimento",
       "schedule": "0 20 * * *"
+    },
+    {
+      "path": "/api/cron/abandonment",
+      "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/waitlist",
+      "schedule": "0 9 * * *"
     }
   ]
 }

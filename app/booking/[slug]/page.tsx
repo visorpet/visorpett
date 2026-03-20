@@ -67,8 +67,17 @@ export default function BookingPage() {
   const [notes,         setNotes]         = useState("");
   const [deliveryType,  setDeliveryType]  = useState<"levar" | "buscar">("levar");
   const [clientAddress, setClientAddress] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitting,   setSubmitting]   = useState(false);
+  const [submitError,  setSubmitError]  = useState<string | null>(null);
+  // Abandonment tracking
+  const [leadId, setLeadId] = useState<string | null>(null);
+  // Waitlist
+  const [showWaitlist,    setShowWaitlist]    = useState(false);
+  const [waitlistName,    setWaitlistName]    = useState("");
+  const [waitlistPhone,   setWaitlistPhone]   = useState("");
+  const [waitlistPet,     setWaitlistPet]     = useState("");
+  const [waitlistSending, setWaitlistSending] = useState(false);
+  const [waitlistDone,    setWaitlistDone]    = useState(false);
   const [confirmed, setConfirmed] = useState<{
     appointment: { id: string; date: string; totalPrice: number };
     petShopName: string; serviceLabel: string; clientName: string; petName: string;
@@ -76,6 +85,30 @@ export default function BookingPage() {
   } | null>(null);
 
   const days = getNext14Days();
+
+  // Abandonment: salva lead quando telefone tem 8+ dígitos no step 4
+  useEffect(() => {
+    if (step !== 4 || clientPhone.replace(/\D/g, "").length < 8) return;
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/booking/${slug}/lead`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            clientPhone, clientName: clientName || undefined,
+            petName: petName || undefined,
+            serviceId: service?.id,
+            step: 4,
+            leadId,
+          }),
+        });
+        const json = await res.json();
+        if (json.data?.leadId && !leadId) setLeadId(json.data.leadId);
+      } catch {}
+    }, 1500);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientPhone, step]);
 
   // Carrega petshop
   useEffect(() => {
@@ -137,6 +170,10 @@ export default function BookingPage() {
     setConfirmed(json.data);
     setStep(5);
     setSubmitting(false);
+    // Marca lead como convertido (fire & forget)
+    if (leadId) {
+      fetch(`/api/booking/${slug}/lead?leadId=${leadId}`, { method: "DELETE" }).catch(() => {});
+    }
   }
 
   // ── Loading ──────────────────────────────────────────────────────
@@ -437,7 +474,22 @@ export default function BookingPage() {
                     Verificando disponibilidade...
                   </div>
                 ) : timeSlots.length === 0 ? (
-                  <p className="text-sm text-gray-400 py-4">Nenhum horário disponível neste dia.</p>
+                  <div className="py-4">
+                    <p className="text-sm text-gray-400 mb-3">Nenhum horário disponível neste dia.</p>
+                    {!waitlistDone ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowWaitlist(true)}
+                        className="flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-primary/20 transition-colors"
+                      >
+                        🔔 Avise-me quando abrir uma vaga
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-2 text-green-600 text-sm font-semibold bg-green-50 px-4 py-2.5 rounded-xl">
+                        ✅ Você está na lista de espera para este dia!
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <div className="grid grid-cols-4 gap-2">
                     {timeSlots.map(slot => (
@@ -633,6 +685,81 @@ export default function BookingPage() {
           </div>
         )}
       </div>
+
+      {/* ── Modal Waitlist ──────────────────────────────────────── */}
+      {showWaitlist && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowWaitlist(false)} />
+          <div className="relative bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="font-bold text-gray-900">Lista de espera 🔔</h3>
+              <button onClick={() => setShowWaitlist(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+            </div>
+            <p className="text-xs text-gray-500 mb-4">
+              Te avisamos pelo WhatsApp quando abrir um horário para o dia selecionado.
+            </p>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Seu nome <span className="text-red-500">*</span></label>
+                <input
+                  className="input w-full"
+                  placeholder="Nome completo"
+                  value={waitlistName}
+                  onChange={e => setWaitlistName(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">WhatsApp <span className="text-red-500">*</span></label>
+                <input
+                  className="input w-full"
+                  placeholder="(62) 99999-9999"
+                  type="tel"
+                  value={waitlistPhone}
+                  onChange={e => setWaitlistPhone(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Nome do pet <span className="text-gray-400 font-normal">(opcional)</span></label>
+                <input
+                  className="input w-full"
+                  placeholder="Ex: Rex"
+                  value={waitlistPet}
+                  onChange={e => setWaitlistPet(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              disabled={!waitlistName.trim() || waitlistPhone.replace(/\D/g,"").length < 8 || waitlistSending}
+              onClick={async () => {
+                if (!selectedDay || !petShop) return;
+                setWaitlistSending(true);
+                try {
+                  await fetch(`/api/booking/${slug}/waitlist`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      clientName:    waitlistName,
+                      clientPhone:   waitlistPhone,
+                      petName:       waitlistPet || undefined,
+                      serviceId:     service?.id,
+                      preferredDate: formatDateISO(selectedDay),
+                    }),
+                  });
+                  setWaitlistDone(true);
+                  setShowWaitlist(false);
+                } catch {}
+                setWaitlistSending(false);
+              }}
+              className="w-full mt-4 bg-primary text-white py-3 rounded-xl font-semibold disabled:opacity-50 transition-opacity"
+            >
+              {waitlistSending ? "Salvando…" : "Entrar na lista de espera"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
