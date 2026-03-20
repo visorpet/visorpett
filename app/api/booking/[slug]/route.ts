@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { buildOwnerNewBookingMessage, buildWhatsAppLink, sendWhatsAppMessage } from "@/lib/whatsapp";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +15,7 @@ export async function GET(
 
     const { data: petShop, error } = await db
       .from("PetShop")
-      .select("id, name, slug, phone, address, city, state, logoUrl")
+      .select("id, name, slug, address, city, state, logoUrl")
       .eq("slug", params.slug)
       .maybeSingle();
 
@@ -60,10 +61,10 @@ export async function POST(
     const data = bookingSchema.parse(body);
     const db = createAdminClient();
 
-    // 1. Busca petshop pelo slug
+    // 1. Busca petshop pelo slug (inclui telefone do dono para notificação)
     const { data: petShop } = await db
       .from("PetShop")
-      .select("id, name")
+      .select("id, name, phone, ownerId")
       .eq("slug", params.slug)
       .maybeSingle();
 
@@ -159,6 +160,47 @@ export async function POST(
 
     if (aptError) throw aptError;
 
+    // ── Notifica o DONO via WhatsApp ──────────────────────────────
+    const aptDate = new Date(data.date);
+    const dateLabel = aptDate.toLocaleDateString("pt-BR", {
+      weekday: "short", day: "numeric", month: "short",
+    }) + " às " + aptDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
+    const ownerMsg = buildOwnerNewBookingMessage({
+      clientName:   data.clientName,
+      clientPhone:  data.clientPhone,
+      petName:      data.petName,
+      petSpecies:   data.petSpecies,
+      petBreed:     data.petBreed,
+      serviceLabel: service.label,
+      date:         dateLabel,
+      price:        service.price,
+      notes:        data.notes,
+    });
+
+    // Tenta auto-envio (Evolution API) — se falhar, gera link manual
+    let ownerWaLink: string | null = null;
+    if (petShop.phone) {
+      const sent = await sendWhatsAppMessage(petShop.phone, ownerMsg);
+      if (!sent) {
+        ownerWaLink = buildWhatsAppLink(petShop.phone, ownerMsg);
+      }
+
+      // Salva no MessageLog para rastreamento
+      await db.from("MessageLog").insert({
+        id:        crypto.randomUUID(),
+        petShopId: petShop.id,
+        petId:     pet.id,
+        clientId:  client.id,
+        type:      "novo_agendamento",
+        prompt:    `booking apt ${appointment.id}`,
+        response:  ownerMsg,
+        waLink:    ownerWaLink,
+        status:    ownerWaLink ? "pending" : "sent",
+        createdAt: new Date().toISOString(),
+      }); // fire and forget
+    }
+
     return NextResponse.json({
       data: {
         appointment,
@@ -166,6 +208,7 @@ export async function POST(
         serviceLabel: service.label,
         clientName:   data.clientName,
         petName:      data.petName,
+        ownerWaLink,  // link para o cliente abrir WhatsApp do dono se quiser confirmar
       }
     }, { status: 201 });
 

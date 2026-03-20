@@ -48,6 +48,33 @@ export function buildPostServiceMessage(ctx: MessageContext): string {
   );
 }
 
+/* ─── Notificação ao DONO quando novo agendamento público chega ─── */
+export function buildOwnerNewBookingMessage(ctx: {
+  clientName:   string;
+  clientPhone:  string;
+  petName:      string;
+  petSpecies:   string;
+  petBreed?:    string;
+  serviceLabel: string;
+  date:         string; // legível, ex: "Qui, 26 de Mar às 13:00"
+  price:        number;
+  notes?:       string;
+}): string {
+  const animal = ctx.petSpecies === "gato" ? "🐱" : ctx.petSpecies === "cachorro" ? "🐶" : "🐾";
+  const breed = ctx.petBreed ? ` (${ctx.petBreed})` : "";
+  const notesLine = ctx.notes ? `\n📝 Obs: ${ctx.notes}` : "";
+  return (
+    `🔔 *Novo agendamento recebido!*\n\n` +
+    `${animal} *Pet:* ${ctx.petName}${breed}\n` +
+    `✂️ *Serviço:* ${ctx.serviceLabel}\n` +
+    `📅 *Data/Hora:* ${ctx.date}\n` +
+    `💰 *Valor:* R$ ${ctx.price.toFixed(2).replace(".", ",")}\n\n` +
+    `👤 *Cliente:* ${ctx.clientName}\n` +
+    `📱 *Telefone:* ${ctx.clientPhone}${notesLine}\n\n` +
+    `_Agendamento recebido via Visorpet_ 🐾`
+  );
+}
+
 /* ─── WhatsApp link (fallback para auto-envio) ─── */
 export function buildWhatsAppLink(phone: string, message: string): string {
   const clean = phone.replace(/\D/g, "");
