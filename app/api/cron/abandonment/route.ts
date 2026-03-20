@@ -29,7 +29,7 @@ export async function GET(request: Request) {
     }
 
     // Busca dados dos pet shops em batch
-    const petShopIds = [...new Set(leads.map((l: { petShopId: string }) => l.petShopId))];
+    const petShopIds = Array.from(new Set(leads.map((l: { petShopId: string }) => l.petShopId)));
     const { data: shops } = await db
       .from("PetShop")
       .select("id, name, slug, phone")

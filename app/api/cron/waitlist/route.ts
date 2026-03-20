@@ -28,7 +28,7 @@ export async function GET(request: Request) {
     }
 
     // Para cada entrada, verifica se há slots disponíveis no dia preferido
-    const petShopIds = [...new Set(waitlist.map((w: { petShopId: string }) => w.petShopId))];
+    const petShopIds = Array.from(new Set(waitlist.map((w: { petShopId: string }) => w.petShopId)));
     const { data: shops } = await db
       .from("PetShop")
       .select("id, name, slug")
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
     const shopMap = Object.fromEntries((shops ?? []).map((s: { id: string; name: string; slug: string }) => [s.id, s]));
 
     // Busca agendamentos para verificar slots ocupados por data
-    const dates = [...new Set(waitlist.map((w: { preferredDate: string }) => w.preferredDate))];
+    const dates = Array.from(new Set(waitlist.map((w: { preferredDate: string }) => w.preferredDate)));
     const occupiedByDateAndShop: Record<string, number> = {};
 
     for (const date of dates) {
