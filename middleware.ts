@@ -10,7 +10,7 @@ const ROLE_ROUTES: Record<string, string> = {
 };
 
 // Rotas públicas (sem autenticação)
-const PUBLIC_ROUTES = ["/login", "/cadastro", "/esqueci-senha", "/redefinir-senha", "/", "/api/webhooks"];
+const PUBLIC_ROUTES = ["/login", "/cadastro", "/esqueci-senha", "/redefinir-senha", "/", "/api/webhooks", "/booking", "/api/booking"];
 
 // Rotas do DONO que não exigem petShopId (onboarding)
 const DONO_NO_SHOP_ALLOWED = ["/dono/onboarding"];

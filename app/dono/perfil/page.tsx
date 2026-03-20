@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 
 type PetShop = {
   name: string;
+  slug: string;
   subscription?: { plan: string; status: string } | null;
 };
 
@@ -64,6 +65,14 @@ export default function DonoPerfilPage() {
   const planLabel = shop?.subscription
     ? PLAN_LABELS[shop.subscription.plan] ?? shop.subscription.plan
     : "Plano Free";
+  const bookingUrl = shop?.slug
+    ? `${typeof window !== "undefined" ? window.location.origin : ""}/booking/${shop.slug}`
+    : null;
+
+  function copyBookingLink() {
+    if (!bookingUrl) return;
+    navigator.clipboard.writeText(bookingUrl).then(() => alert("Link copiado!"));
+  }
 
   return (
     <div className="page-container">
@@ -79,6 +88,39 @@ export default function DonoPerfilPage() {
           <MaterialIcon icon="qr_code_2" size="xl" className="text-white/80" />
         </div>
       </section>
+
+      {/* Link de agendamento público */}
+      {bookingUrl && (
+        <section className="animate-slide-up mb-6">
+          <p className="section-label mb-3">Link de Agendamento</p>
+          <div className="bg-white border border-primary/20 rounded-2xl p-4">
+            <div className="flex items-start gap-3 mb-3">
+              <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                <MaterialIcon icon="link" size="sm" className="text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-900 mb-0.5">Página pública de agendamento</p>
+                <p className="text-xs text-gray-500 break-all">{bookingUrl}</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={copyBookingLink}
+                className="flex-1 flex items-center justify-center gap-1.5 bg-primary/10 text-primary text-sm font-semibold py-2.5 rounded-xl hover:bg-primary/20 transition-colors"
+              >
+                <MaterialIcon icon="content_copy" size="sm" /> Copiar link
+              </button>
+              <Link
+                href={bookingUrl}
+                target="_blank"
+                className="flex-1 flex items-center justify-center gap-1.5 bg-primary text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-primary/90 transition-colors"
+              >
+                <MaterialIcon icon="open_in_new" size="sm" /> Ver página
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="animate-slide-up space-y-6">
         <div>
