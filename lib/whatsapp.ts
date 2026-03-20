@@ -40,10 +40,11 @@ export function buildReminderMessage(ctx: MessageContext): string {
 
 export function buildPostServiceMessage(ctx: MessageContext): string {
   const animal = ctx.petSpecies === "gato" ? "🐱" : "🐶";
+  const service = ctx.serviceLabel ? ` de *${ctx.serviceLabel}*` : "";
   return (
     `Oi ${ctx.clientName}! ${animal} Aqui é do *${ctx.petShopName}*.\n\n` +
-    `Esperamos que o(a) *${ctx.petName}* tenha adorado o atendimento de hoje! ` +
-    `Se quiser avaliar nosso serviço, ficamos muito felizes com seu feedback. 😊\n\n` +
+    `O(A) *${ctx.petName}* acabou de sair do atendimento${service} e está limpinho(a), cheiroso(a) e prontinho(a) para te encontrar! 🛁✨\n\n` +
+    `Esperamos que tenha adorado! Se quiser nos contar como foi, ficamos muito felizes com seu feedback. 😊\n\n` +
     `Até a próxima! 🐾`
   );
 }

@@ -307,6 +307,9 @@ export default function ClienteDetalhe() {
   const [showNew, setShowNew] = useState(false);
   const [cancelId, setCancelId] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [concludeId, setConcludeId] = useState<string | null>(null);
+  const [concluding, setConcluding] = useState(false);
+  const [concludeDone, setConcludeDone] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -336,6 +339,21 @@ export default function ClienteDetalhe() {
     setCancelling(false);
     setCancelId(null);
     load();
+  }
+
+  async function concludeApt() {
+    if (!concludeId) return;
+    setConcluding(true);
+    await fetch(`/api/appointments/${concludeId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "concluido" }),
+    });
+    setConcluding(false);
+    setConcludeId(null);
+    setConcludeDone(true);
+    load();
+    setTimeout(() => setConcludeDone(false), 3000);
   }
 
   const upcoming = (data?.appointments ?? []).filter((a) =>
@@ -442,7 +460,14 @@ export default function ClienteDetalhe() {
                   {apt.notes && (
                     <p className="text-xs text-gray-400 bg-gray-50 rounded-lg p-2 mb-2">📝 {apt.notes}</p>
                   )}
-                  <div className="flex gap-2 mt-1">
+                  {/* Botão principal: Concluído */}
+                  <button
+                    onClick={() => setConcludeId(apt.id)}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-colors mb-2 mt-1"
+                  >
+                    <MaterialIcon icon="check_circle" size="sm" /> Pet concluído ✓
+                  </button>
+                  <div className="flex gap-2">
                     <button
                       onClick={() => setReschedule(apt)}
                       className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-primary/10 text-primary rounded-xl text-xs font-semibold hover:bg-primary/20 transition-colors"
@@ -518,6 +543,44 @@ export default function ClienteDetalhe() {
           onClose={() => setShowNew(false)}
           onDone={() => { setShowNew(false); load(); }}
         />
+      )}
+
+      {/* Toast de conclusão */}
+      {concludeDone && (
+        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2 text-sm font-semibold animate-slide-up">
+          <MaterialIcon icon="check_circle" size="sm" /> Pet concluído! WhatsApp enviado ao cliente 🐾
+        </div>
+      )}
+
+      {/* Dialog concluir */}
+      {concludeId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setConcludeId(null)} />
+          <div className="relative bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+            <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+              🛁
+            </div>
+            <h3 className="text-center font-bold text-gray-900 mb-1">Marcar como concluído?</h3>
+            <p className="text-center text-sm text-gray-500 mb-5">
+              O atendimento será concluído e o cliente receberá uma mensagem de WhatsApp automática.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConcludeId(null)}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors"
+              >
+                Voltar
+              </button>
+              <button
+                onClick={concludeApt}
+                disabled={concluding}
+                className="flex-1 py-2.5 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-600 disabled:opacity-50 transition-colors"
+              >
+                {concluding ? "Concluindo…" : "✓ Concluir"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Dialog cancelar */}

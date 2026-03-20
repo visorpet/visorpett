@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { buildPostServiceMessage, sendWhatsAppMessage } from "@/lib/whatsapp";
 import { updateAppointmentSchema } from "@/lib/validations/appointment";
 import { z } from "zod";
 
@@ -19,7 +20,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
     const { data: appointment } = await db
       .from("Appointment")
-      .select("id, petShopId")
+      .select("id, petShopId, petId, serviceId")
       .eq("id", params.id)
       .maybeSingle();
 
@@ -45,12 +46,51 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
     if (error) throw error;
 
+    // ── Quando concluído: envia WhatsApp para o cliente (fire & forget) ──
+    if ("status" in parsedData && parsedData.status === "concluido") {
+      try {
+        const [{ data: pet }, { data: petShop }, { data: service }] = await Promise.all([
+          db.from("Pet").select("name, species, client:Client!clientId(name, phone)").eq("id", appointment.petId).maybeSingle(),
+          db.from("PetShop").select("name").eq("id", appointment.petShopId).maybeSingle(),
+          db.from("Service").select("label").eq("id", appointment.serviceId).maybeSingle(),
+        ]);
+
+        const client = (pet as { client?: { name: string; phone: string } } | null)?.client;
+
+        if (client?.phone && pet && petShop) {
+          const msg = buildPostServiceMessage({
+            clientName:   client.name,
+            petName:      (pet as { name: string }).name,
+            petSpecies:   (pet as { species: string }).species,
+            petShopName:  petShop.name,
+            serviceLabel: service?.label,
+          });
+
+          sendWhatsAppMessage(client.phone, msg).then((sent) => {
+            if (!sent) return;
+            db.from("MessageLog").insert({
+              id:        crypto.randomUUID(),
+              petShopId: appointment.petShopId,
+              petId:     appointment.petId,
+              clientId:  null,
+              type:      "pos_atendimento",
+              prompt:    `apt concluido ${params.id}`,
+              response:  msg,
+              status:    "sent",
+            }).then(() => null, () => null);
+          }).catch(() => null);
+        }
+      } catch {
+        // notificação falhou — não afeta a resposta
+      }
+    }
+
     return NextResponse.json({ data: updatedAppointment });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "Erro de validação", details: error.issues }, { status: 400 });
     }
-    console.error("Error updating appointment status:", error);
+    console.error("Error updating appointment:", error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }
