@@ -12,3 +12,8 @@ export const appointmentSchema = z.object({
 export const updateAppointmentStatusSchema = z.object({
   status: z.enum(["agendado", "confirmado", "em_atendimento", "concluido", "cancelado", "faltou"]),
 });
+
+export const updateAppointmentSchema = z.union([
+  z.object({ status: z.enum(["agendado", "confirmado", "em_atendimento", "concluido", "cancelado", "faltou"]) }),
+  z.object({ date: z.string() }),
+]);

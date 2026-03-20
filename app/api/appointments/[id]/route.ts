@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { updateAppointmentStatusSchema } from "@/lib/validations/appointment";
+import { updateAppointmentSchema } from "@/lib/validations/appointment";
 import { z } from "zod";
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
@@ -30,11 +30,15 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
 
     const body = await request.json();
-    const parsedData = updateAppointmentStatusSchema.parse(body);
+    const parsedData = updateAppointmentSchema.parse(body);
+
+    const updateFields: Record<string, unknown> = { updatedAt: new Date().toISOString() };
+    if ("status" in parsedData) updateFields.status = parsedData.status;
+    if ("date" in parsedData) updateFields.date = new Date(parsedData.date).toISOString();
 
     const { data: updatedAppointment, error } = await db
       .from("Appointment")
-      .update({ status: parsedData.status, updatedAt: new Date().toISOString() })
+      .update(updateFields)
       .eq("id", params.id)
       .select()
       .single();

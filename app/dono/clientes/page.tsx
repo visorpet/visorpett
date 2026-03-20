@@ -72,9 +72,10 @@ export default function DonoClientesPage() {
           </div>
         ) : (
           clients.map((cliente) => (
-            <div
+            <Link
               key={cliente.id}
-              className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between"
+              href={`/dono/clientes/${cliente.id}`}
+              className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow"
             >
               <div className="flex items-center gap-3">
                 <Avatar name={cliente.name} size="md" />
@@ -93,12 +94,13 @@ export default function DonoClientesPage() {
                   href={`https://wa.me/55${cliente.phone.replace(/\D/g, "")}`}
                   target="_blank"
                   rel="noreferrer"
+                  onClick={(e) => e.stopPropagation()}
                   className="text-primary bg-primary/10 p-1.5 rounded-lg hover:bg-primary/20 transition-colors"
                 >
                   <MaterialIcon icon="chat" size="sm" />
                 </a>
               </div>
-            </div>
+            </Link>
           ))
         )}
       </section>
