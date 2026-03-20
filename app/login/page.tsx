@@ -29,13 +29,6 @@ const ROLES: RoleOption[] = [
     description: "Gerenciar minha loja e agendamentos",
     color: "primary",
   },
-  {
-    key: "SUPER_ADMIN",
-    label: "Admin",
-    icon: "admin_panel_settings",
-    description: "Painel de administração da plataforma",
-    color: "primary",
-  },
 ];
 
 export default function LoginPage() {
