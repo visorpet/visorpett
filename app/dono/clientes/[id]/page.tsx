@@ -25,8 +25,8 @@ type ClientDetail = {
 };
 
 /* ─── helpers ─── */
-const STATUS_MAP: Record<string, { label: string; color: "success" | "warning" | "danger" | "neutral" | "info" }> = {
-  agendado:        { label: "Agendado",       color: "info" },
+const STATUS_MAP: Record<string, { label: string; color: "primary" | "success" | "warning" | "danger" | "neutral" }> = {
+  agendado:        { label: "Agendado",       color: "primary" },
   confirmado:      { label: "Confirmado",     color: "success" },
   em_atendimento:  { label: "Em atendimento", color: "warning" },
   concluido:       { label: "Concluído",      color: "success" },
