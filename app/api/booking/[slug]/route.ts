@@ -160,45 +160,44 @@ export async function POST(
 
     if (aptError) throw aptError;
 
-    // ── Notifica o DONO via WhatsApp ──────────────────────────────
-    const aptDate = new Date(data.date);
-    const dateLabel = aptDate.toLocaleDateString("pt-BR", {
-      weekday: "short", day: "numeric", month: "short",
-    }) + " às " + aptDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-
-    const ownerMsg = buildOwnerNewBookingMessage({
-      clientName:   data.clientName,
-      clientPhone:  data.clientPhone,
-      petName:      data.petName,
-      petSpecies:   data.petSpecies,
-      petBreed:     data.petBreed,
-      serviceLabel: service.label,
-      date:         dateLabel,
-      price:        service.price,
-      notes:        data.notes,
-    });
-
-    // Tenta auto-envio (Evolution API) — se falhar, gera link manual
+    // ── Notifica o DONO via WhatsApp (fire & forget — nunca bloqueia o retorno) ──
     let ownerWaLink: string | null = null;
-    if (petShop.phone) {
-      const sent = await sendWhatsAppMessage(petShop.phone, ownerMsg);
-      if (!sent) {
-        ownerWaLink = buildWhatsAppLink(petShop.phone, ownerMsg);
-      }
+    try {
+      if (petShop.phone) {
+        const aptDate = new Date(data.date);
+        const dateLabel = aptDate.toLocaleDateString("pt-BR", {
+          weekday: "short", day: "numeric", month: "short",
+        }) + " às " + aptDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
-      // Salva no MessageLog para rastreamento
-      await db.from("MessageLog").insert({
-        id:        crypto.randomUUID(),
-        petShopId: petShop.id,
-        petId:     pet.id,
-        clientId:  client.id,
-        type:      "novo_agendamento",
-        prompt:    `booking apt ${appointment.id}`,
-        response:  ownerMsg,
-        waLink:    ownerWaLink,
-        status:    ownerWaLink ? "pending" : "sent",
-        createdAt: new Date().toISOString(),
-      }); // fire and forget
+        const ownerMsg = buildOwnerNewBookingMessage({
+          clientName:   data.clientName,
+          clientPhone:  data.clientPhone,
+          petName:      data.petName,
+          petSpecies:   data.petSpecies,
+          petBreed:     data.petBreed,
+          serviceLabel: service.label,
+          date:         dateLabel,
+          price:        service.price,
+          notes:        data.notes,
+        });
+
+        const sent = await sendWhatsAppMessage(petShop.phone, ownerMsg);
+        if (!sent) ownerWaLink = buildWhatsAppLink(petShop.phone, ownerMsg);
+
+        // Salva no MessageLog sem await para não bloquear
+        db.from("MessageLog").insert({
+          id:        crypto.randomUUID(),
+          petShopId: petShop.id,
+          petId:     pet.id,
+          clientId:  client.id,
+          type:      "novo_agendamento",
+          prompt:    `booking apt ${appointment.id}`,
+          response:  ownerMsg,
+          status:    ownerWaLink ? "pending" : "sent",
+        }).then(() => null, () => null);
+      }
+    } catch {
+      // notificação falhou — não afeta o agendamento
     }
 
     return NextResponse.json({
