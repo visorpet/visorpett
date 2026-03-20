@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { MaterialIcon, Badge, Avatar } from "@/components/ui";
+import { MaterialIcon, Badge, Avatar, PetEmpty } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 type Appointment = {
@@ -166,10 +166,7 @@ export default function AgendaPage() {
             <div key={i} className="bg-white p-4 rounded-xl animate-pulse h-20 border border-gray-100" />
           ))
         ) : filtered.length === 0 ? (
-          <div className="text-center py-10">
-            <MaterialIcon icon="event_busy" size="xl" className="text-gray-300 mb-2" />
-            <p className="text-gray-500 font-medium">Nenhum agendamento neste dia.</p>
-          </div>
+          <PetEmpty type="cat" title="Nenhum agendamento neste dia." subtitle="Aproveite para descansar! 😴" />
         ) : (
           filtered.map((apt) => {
             const time = new Date(apt.date).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });

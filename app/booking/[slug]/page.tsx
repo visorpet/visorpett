@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { MaterialIcon } from "@/components/ui/MaterialIcon";
+import { PetPageLoader, PetSuccess, PetEmpty } from "@/components/ui";
 
 type PetShop = {
   id: string; name: string; slug: string;
@@ -178,14 +179,7 @@ export default function BookingPage() {
 
   // ── Loading ──────────────────────────────────────────────────────
   if (loadingShop) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-bg-light">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-500 text-sm">Carregando...</p>
-        </div>
-      </div>
-    );
+    return <PetPageLoader label="Preparando a tesoura... ✂️" />;
   }
 
   if (notFound || !petShop) {
@@ -207,10 +201,8 @@ export default function BookingPage() {
       <div className="min-h-screen bg-bg-light flex flex-col items-center justify-center px-6 py-10">
         <div className="w-full max-w-sm">
           <div className="bg-white rounded-3xl shadow-lg p-8 text-center mb-4">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
-              <MaterialIcon icon="check_circle" size="xl" className="text-green-500" fill />
-            </div>
-            <h1 className="text-2xl font-black text-gray-900 mb-1">Agendado!</h1>
+            <PetSuccess />
+            <h1 className="text-2xl font-black text-gray-900 mb-1 mt-2">Agendado! 🎉</h1>
             <p className="text-gray-500 text-sm mb-6">Seu horário está confirmado</p>
 
             <div className="bg-gray-50 rounded-2xl p-4 text-left space-y-3 mb-6">
@@ -370,9 +362,8 @@ export default function BookingPage() {
             </div>
 
             {services.length === 0 ? (
-              <div className="text-center py-10 text-gray-400">
-                <MaterialIcon icon="sentiment_dissatisfied" size="xl" className="mb-2" />
-                <p className="text-sm">Nenhum serviço disponível no momento</p>
+              <div className="py-4">
+                <PetEmpty type="dog" title="Nenhum serviço disponível no momento" subtitle="Tente novamente mais tarde." />
               </div>
             ) : (
               <div className="space-y-2">

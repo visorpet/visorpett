@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { MaterialIcon, Avatar, Badge } from "@/components/ui";
+import { MaterialIcon, Avatar, Badge, PetEmpty } from "@/components/ui";
 
 type Client = {
   id: string;
@@ -64,12 +64,11 @@ export default function DonoClientesPage() {
             <div key={i} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm animate-pulse h-16" />
           ))
         ) : clients.length === 0 ? (
-          <div className="text-center py-10">
-            <MaterialIcon icon="group_off" size="xl" className="text-gray-300 mb-2" />
-            <p className="text-gray-500 font-medium">
-              {search ? "Nenhum cliente encontrado." : "Ainda não há clientes cadastrados."}
-            </p>
-          </div>
+          <PetEmpty
+            type={search ? "paw" : "dog"}
+            title={search ? "Nenhum cliente encontrado." : "Ainda não há clientes cadastrados."}
+            subtitle={search ? undefined : "Compartilhe seu link de agendamento para receber o primeiro cliente!"}
+          />
         ) : (
           clients.map((cliente) => (
             <Link

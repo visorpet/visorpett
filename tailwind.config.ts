@@ -51,10 +51,21 @@ const config: Config = {
         "card-hover": "0 4px 12px rgba(0,0,0,0.10)",
       },
       animation: {
-        "fade-in": "fadeIn 0.3s ease-out",
-        "slide-up": "slideUp 0.3s ease-out",
-        "scale-in": "scaleIn 0.2s ease-out",
-        "pulse-soft": "pulseSoft 2s ease-in-out infinite",
+        "fade-in":      "fadeIn 0.3s ease-out",
+        "slide-up":     "slideUp 0.3s ease-out",
+        "scale-in":     "scaleIn 0.2s ease-out",
+        "pulse-soft":   "pulseSoft 2s ease-in-out infinite",
+        // Pet animations
+        "paw-bounce":   "pawBounce 0.6s ease-in-out infinite alternate",
+        "dog-wag":      "dogWag 0.4s ease-in-out infinite alternate",
+        "pet-float":    "petFloat 2.5s ease-in-out infinite",
+        "zzz-float":    "zzzFloat 2s ease-in-out infinite",
+        "paw-pop":      "pawPop 0.4s cubic-bezier(0.175,0.885,0.32,1.275)",
+        "tail-wag":     "tailWag 0.3s ease-in-out infinite alternate",
+        "confetti-fall":"confettiFall 1.5s ease-in forwards",
+        "bounce-in":    "bounceIn 0.6s cubic-bezier(0.175,0.885,0.32,1.275)",
+        "ear-wiggle":   "earWiggle 0.5s ease-in-out infinite alternate",
+        "heart-pop":    "heartPop 0.5s cubic-bezier(0.175,0.885,0.32,1.275) infinite alternate",
       },
       keyframes: {
         fadeIn: {
@@ -72,6 +83,49 @@ const config: Config = {
         pulseSoft: {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.6" },
+        },
+        pawBounce: {
+          "0%":   { transform: "translateY(0) scale(1)",    opacity: "0.7" },
+          "100%": { transform: "translateY(-10px) scale(1.15)", opacity: "1" },
+        },
+        dogWag: {
+          "0%":   { transform: "rotate(-15deg)" },
+          "100%": { transform: "rotate(15deg)" },
+        },
+        petFloat: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%":      { transform: "translateY(-8px)" },
+        },
+        zzzFloat: {
+          "0%":   { transform: "translateY(0) scale(0.8)", opacity: "0" },
+          "30%":  { opacity: "1" },
+          "100%": { transform: "translateY(-20px) scale(1.1)", opacity: "0" },
+        },
+        pawPop: {
+          "0%":   { transform: "scale(0) rotate(-20deg)", opacity: "0" },
+          "70%":  { transform: "scale(1.2) rotate(5deg)" },
+          "100%": { transform: "scale(1) rotate(0deg)",  opacity: "1" },
+        },
+        tailWag: {
+          "0%":   { transform: "rotate(-20deg)", "transform-origin": "bottom left" },
+          "100%": { transform: "rotate(20deg)",  "transform-origin": "bottom left" },
+        },
+        confettiFall: {
+          "0%":   { transform: "translateY(-20px) rotate(0deg)",   opacity: "1" },
+          "100%": { transform: "translateY(80px) rotate(360deg)",  opacity: "0" },
+        },
+        bounceIn: {
+          "0%":   { transform: "scale(0)",    opacity: "0" },
+          "60%":  { transform: "scale(1.15)" },
+          "100%": { transform: "scale(1)",    opacity: "1" },
+        },
+        earWiggle: {
+          "0%":   { transform: "rotate(-8deg)", "transform-origin": "bottom center" },
+          "100%": { transform: "rotate(8deg)",  "transform-origin": "bottom center" },
+        },
+        heartPop: {
+          "0%":   { transform: "scale(1)" },
+          "100%": { transform: "scale(1.3)" },
         },
       },
       backgroundImage: {
