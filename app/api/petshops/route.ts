@@ -42,7 +42,11 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (existing) {
-      return NextResponse.json({ error: "Você já possui um pet shop cadastrado" }, { status: 409 });
+      // Recupera o petShopId no JWT caso tenha sido perdido
+      await db.auth.admin.updateUserById(ownerId, {
+        user_metadata: { petShopId: existing.id },
+      });
+      return NextResponse.json({ data: existing }, { status: 200 });
     }
 
     const body = await request.json();
