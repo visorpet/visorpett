@@ -1,10 +1,10 @@
 // Visorpet Service Worker — PWA offline support
-const CACHE_NAME = "visorpet-v1";
+const CACHE_NAME = "visorpet-v2";
 const STATIC_ASSETS = [
   "/",
   "/manifest.json",
-  "/icons/icon-192x192.png",
-  "/icons/icon-512x512.png",
+  "/icons/icon-192x192.svg",
+  "/icons/icon-512x512.svg",
 ];
 
 // Rotas que ficam em cache (shell do app)
@@ -70,8 +70,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title ?? "Visorpet", {
       body:  data.body ?? "",
-      icon:  "/icons/icon-192x192.png",
-      badge: "/icons/icon-96x96.png",
+      icon:  "/icons/icon-192x192.svg",
+      badge: "/icons/icon-96x96.svg",
       data:  { url: data.url ?? "/" },
     })
   );

@@ -126,25 +126,25 @@ export default function DonoPerfilPage() {
         <div>
           <p className="section-label mb-3">Gestão da Loja</p>
           <div className="flex flex-col gap-2">
-            <MenuItem icon="storefront" label="Dados do Pet Shop" href="/dono/perfil/dados" />
-            <MenuItem icon="inventory_2" label="Serviços e Preços" href="/dono/perfil/servicos" />
-            <MenuItem icon="badge" label="Equipe e Tosadores" badge={groomerCount > 0 ? String(groomerCount) : undefined} href="/dono/perfil/equipe" />
-            <MenuItem icon="schedule" label="Horários de Funcionamento" href="/dono/perfil/horarios" />
+            <MenuItem icon="storefront" label="Dados do Pet Shop" />
+            <MenuItem icon="inventory_2" label="Serviços e Preços" href="/dono/servicos" />
+            <MenuItem icon="badge" label="Equipe e Tosadores" badge={groomerCount > 0 ? String(groomerCount) : undefined} href="/dono/tosador" />
+            <MenuItem icon="schedule" label="Horários de Funcionamento" />
           </div>
         </div>
 
         <div>
           <p className="section-label mb-3">Minha Assinatura</p>
           <div className="flex flex-col gap-2">
-            <MenuItem icon="star" label="Fazer Upgrade de Plano" href="/dono/perfil/plano" />
-            <MenuItem icon="receipt_long" label="Faturas da Plataforma" href="/dono/perfil/faturas" />
+            <MenuItem icon="star" label="Fazer Upgrade de Plano" />
+            <MenuItem icon="receipt_long" label="Faturas da Plataforma" />
           </div>
         </div>
 
         <div>
           <p className="section-label mb-3">Sistema</p>
           <div className="flex flex-col gap-2">
-            <MenuItem icon="help" label="Central de Ajuda" href="/dono/ajuda" />
+            <MenuItem icon="help" label="Central de Ajuda" />
             <MenuItem icon="logout" label="Sair da Conta" danger onClick={handleSignOut} />
           </div>
         </div>
