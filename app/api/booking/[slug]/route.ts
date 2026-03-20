@@ -81,7 +81,6 @@ export async function POST(
       .maybeSingle();
 
     if (!client) {
-      const now = new Date().toISOString();
       const { data: newClient, error: clientError } = await db
         .from("Client")
         .insert({
@@ -90,8 +89,6 @@ export async function POST(
           name:      data.clientName,
           phone:     data.clientPhone,
           email:     data.clientEmail || null,
-          createdAt: now,
-          updatedAt: now,
         })
         .select("id")
         .single();
