@@ -301,3 +301,8 @@ SELECT
 FROM pg_tables t
 WHERE schemaname = 'public'
 ORDER BY tablename;
+
+-- ─── Migração: adiciona colunas Asaas na Subscription ────────
+ALTER TABLE "Subscription"
+  ADD COLUMN IF NOT EXISTS "asaasCustomerId"     TEXT,
+  ADD COLUMN IF NOT EXISTS "asaasSubscriptionId" TEXT;

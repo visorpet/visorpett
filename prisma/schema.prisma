@@ -91,6 +91,8 @@ model Subscription {
   petShopId            String             @unique
   plan                 SubscriptionPlan   @default(FREE)
   status               SubscriptionStatus @default(TRIALING)
+  asaasCustomerId      String?
+  asaasSubscriptionId  String?
   stripeCustomerId     String?            @unique
   stripeSubscriptionId String?            @unique
   stripePriceId        String?

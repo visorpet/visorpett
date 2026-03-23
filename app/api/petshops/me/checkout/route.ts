@@ -17,45 +17,86 @@ const schema = z.object({
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request: Request) {
-  try {
-    const session = await getSession();
-    if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+/** Extrai mensagem legível de erros da API Asaas */
+function parseAsaasError(error: unknown): { message: string; status: number } {
+  const msg = error instanceof Error ? error.message : String(error);
 
-    const { role, petShopId } = session.user;
-    if (role !== "DONO") return NextResponse.json({ error: "Acesso restrito" }, { status: 403 });
-    if (!petShopId) return NextResponse.json({ error: "Pet shop não encontrado" }, { status: 404 });
+  // ASAAS_API_KEY não configurada
+  if (msg.includes("ASAAS_API_KEY não configurada")) {
+    return { message: "Gateway de pagamento não configurado. Entre em contato com o suporte.", status: 503 };
+  }
 
-    const body = await request.json();
-    const { plan, billingType } = schema.parse(body);
-
-    const price = PLAN_PRICES[plan];
-
-    const db = createAdminClient();
-    const { data: shop } = await db
-      .from("PetShop")
-      .select("id, name, phone, ownerId")
-      .eq("id", petShopId)
-      .maybeSingle();
-
-    if (!shop) return NextResponse.json({ error: "Pet shop não encontrado" }, { status: 404 });
-
-    // Busca e-mail do dono via Auth Admin
-    let ownerEmail: string | undefined;
+  // Erros HTTP do Asaas: "Asaas 4XX: {...}"
+  const httpMatch = msg.match(/Asaas (\d+): (.+)/);
+  if (httpMatch) {
+    const statusCode = parseInt(httpMatch[1]);
     try {
-      const authAdmin = createAuthClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!,
-        { auth: { autoRefreshToken: false, persistSession: false } }
-      );
-      const { data: { user: ownerUser } } = await authAdmin.auth.admin.getUserById(
-        (shop as any).ownerId
-      );
-      ownerEmail = ownerUser?.email ?? undefined;
-    } catch { /* e-mail é opcional */ }
+      const body = JSON.parse(httpMatch[2]);
+      const descriptions: string[] = (body.errors ?? [])
+        .map((e: { description?: string }) => e.description)
+        .filter(Boolean);
 
-    // Cria ou reutiliza cliente Asaas
-    let customer = await findAsaasCustomer(petShopId);
+      if (descriptions.length > 0) {
+        return { message: descriptions.join(" | "), status: statusCode >= 500 ? 502 : 422 };
+      }
+
+      if (statusCode === 401) return { message: "Chave de API inválida. Contate o suporte.", status: 502 };
+      if (statusCode === 429) return { message: "Muitas tentativas. Aguarde alguns segundos e tente novamente.", status: 429 };
+    } catch { /* JSON inválido — usa mensagem genérica abaixo */ }
+  }
+
+  return { message: "Erro ao processar pagamento. Tente novamente.", status: 500 };
+}
+
+export async function POST(request: Request) {
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+
+  const { role, petShopId } = session.user;
+  if (role !== "DONO") return NextResponse.json({ error: "Acesso restrito" }, { status: 403 });
+  if (!petShopId) return NextResponse.json({ error: "Pet shop não encontrado" }, { status: 404 });
+
+  // Valida body
+  let plan: string, billingType: string;
+  try {
+    const body = await request.json();
+    const parsed = schema.parse(body);
+    plan = parsed.plan;
+    billingType = parsed.billingType;
+  } catch {
+    return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
+  }
+
+  const price = PLAN_PRICES[plan];
+  const db = createAdminClient();
+
+  // Busca pet shop
+  const { data: shop } = await db
+    .from("PetShop")
+    .select("id, name, phone, ownerId")
+    .eq("id", petShopId)
+    .maybeSingle();
+
+  if (!shop) return NextResponse.json({ error: "Pet shop não encontrado" }, { status: 404 });
+
+  // Busca e-mail do dono via Auth Admin (opcional)
+  let ownerEmail: string | undefined;
+  try {
+    const authAdmin = createAuthClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+    const { data: { user: ownerUser } } = await authAdmin.auth.admin.getUserById(
+      (shop as any).ownerId
+    );
+    ownerEmail = ownerUser?.email ?? undefined;
+  } catch { /* e-mail é opcional */ }
+
+  // ─── Asaas: cria/reutiliza cliente ───────────────────────
+  let customer: any;
+  try {
+    customer = await findAsaasCustomer(petShopId);
     if (!customer) {
       customer = await createAsaasCustomer({
         name: shop.name,
@@ -64,13 +105,20 @@ export async function POST(request: Request) {
         externalReference: petShopId,
       });
     }
+  } catch (err) {
+    const { message, status } = parseAsaasError(err);
+    console.error("[CHECKOUT] cliente Asaas:", err);
+    return NextResponse.json({ error: message }, { status });
+  }
 
-    // Cria assinatura recorrente mensal
+  // ─── Asaas: cria assinatura ───────────────────────────────
+  let subscription: any;
+  try {
     const nextDueDate = new Date();
     nextDueDate.setDate(nextDueDate.getDate() + 1);
     const dueDateStr = nextDueDate.toISOString().split("T")[0];
 
-    const subscription = await createAsaasSubscription({
+    subscription = await createAsaasSubscription({
       customer: customer.id,
       billingType: billingType as "PIX" | "BOLETO" | "CREDIT_CARD",
       value: price,
@@ -79,32 +127,42 @@ export async function POST(request: Request) {
       description: `Visorpet ${plan} — ${shop.name}`,
       externalReference: petShopId,
     });
-
-    // Atualiza Subscription no banco
-    await db
-      .from("Subscription")
-      .upsert(
-        {
-          petShopId,
-          plan,
-          status: "TRIALING",
-          asaasCustomerId: customer.id,
-          asaasSubscriptionId: subscription.id,
-          updatedAt: new Date().toISOString(),
-        },
-        { onConflict: "petShopId" }
-      );
-
-    return NextResponse.json({
-      ok: true,
-      paymentLink: subscription.url ?? null,
-      subscriptionId: subscription.id,
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
-    }
-    console.error("[CHECKOUT]", error);
-    return NextResponse.json({ error: "Erro ao gerar cobrança" }, { status: 500 });
+  } catch (err) {
+    const { message, status } = parseAsaasError(err);
+    console.error("[CHECKOUT] assinatura Asaas:", err);
+    return NextResponse.json({ error: message }, { status });
   }
+
+  // ─── Banco: atualiza Subscription ────────────────────────
+  try {
+    const { data: existing } = await db
+      .from("Subscription")
+      .select("id")
+      .eq("petShopId", petShopId)
+      .maybeSingle();
+
+    const payload = {
+      plan,
+      status: "TRIALING",
+      asaasCustomerId: customer.id,
+      asaasSubscriptionId: subscription.id,
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (existing) {
+      await db.from("Subscription").update(payload).eq("petShopId", petShopId);
+    } else {
+      await db.from("Subscription").insert({ petShopId, ...payload });
+    }
+  } catch (dbErr) {
+    // Assinatura foi criada no Asaas mas falhou ao salvar no banco.
+    // Retorna sucesso mesmo assim para não bloquear o checkout.
+    console.error("[CHECKOUT] erro ao salvar no banco (assinatura já criada no Asaas):", dbErr);
+  }
+
+  return NextResponse.json({
+    ok: true,
+    paymentLink: subscription.url ?? null,
+    subscriptionId: subscription.id,
+  });
 }
