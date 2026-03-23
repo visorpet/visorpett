@@ -11,7 +11,7 @@ const petshopUpdateSchema = z.object({
   address:       z.string().optional(),
   city:          z.string().optional(),
   state:         z.string().optional(),
-  businessHours: z.record(z.object({
+  businessHours: z.record(z.string(), z.object({
     active: z.boolean(),
     open:   z.string(),
     close:  z.string(),
