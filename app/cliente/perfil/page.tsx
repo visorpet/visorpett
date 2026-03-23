@@ -1,23 +1,32 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useUser } from "@/lib/supabase/useUser";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Avatar, Badge, MaterialIcon } from "@/components/ui";
-import { cn } from "@/lib/utils";
+import { Badge, MaterialIcon, PhotoUpload } from "@/components/ui";
 
 export default function PerfilPage() {
   const { user: authUser } = useUser();
   const router = useRouter();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const user = {
     name: authUser?.name || "Tutor",
     email: authUser?.email || "usuario@email.com",
-    avatar: authUser?.image,
+    avatar: avatarUrl ?? authUser?.image ?? null,
     referralCount: 5,
     joinedDate: "Março 2024"
+  };
+
+  const handleAvatarUploaded = async (url: string) => {
+    setAvatarUrl(url);
+    await fetch("/api/me", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: url }),
+    });
   };
 
   const handleLogout = async () => {
@@ -39,12 +48,14 @@ export default function PerfilPage() {
       {/* ── Perfil Card ── */}
       <section className="mt-4 animate-slide-up">
         <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col items-center text-center">
-          <Avatar 
-            src={user.avatar || undefined} 
-            name={user.name} 
-            size="xl" 
-            ring 
-            ringColor="ring-primary/20"
+          <PhotoUpload
+            currentUrl={user.avatar}
+            name={user.name}
+            folder="users"
+            onUploaded={handleAvatarUploaded}
+            size="xl"
+            shape="circle"
+            label="Adicionar foto"
           />
           <h2 className="mt-4 text-xl font-black text-gray-900">{user.name}</h2>
           <p className="text-gray-500 text-sm font-medium">{user.email}</p>

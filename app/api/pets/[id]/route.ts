@@ -79,6 +79,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         birthDate: parsedData.birthDate ?? null,
         weight: parsedData.weight ?? null,
         notes: parsedData.notes ?? null,
+        photoUrl: parsedData.photoUrl ?? null,
         updatedAt: new Date().toISOString(),
       })
       .eq("id", params.id)

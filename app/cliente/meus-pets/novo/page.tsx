@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useUser } from "@/lib/supabase/useUser";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { MaterialIcon } from "@/components/ui";
+import { MaterialIcon, PhotoUpload } from "@/components/ui";
 
 const SPECIES_OPTIONS = [
   { value: "cachorro", label: "Cachorro", icon: "pets" },
@@ -24,6 +24,7 @@ export default function NovoPetPage() {
   const [birthDate, setBirthDate] = useState("");
   const [weight, setWeight] = useState("");
   const [notes, setNotes] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,6 +49,7 @@ export default function NovoPetPage() {
           birthDate: birthDate || undefined,
           weight: weight ? parseFloat(weight) : undefined,
           notes: notes || undefined,
+          photoUrl: photoUrl || undefined,
         }),
       });
 
@@ -78,6 +80,19 @@ export default function NovoPetPage() {
       />
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6 mt-2">
+        {/* ── Foto do pet ── */}
+        <section className="animate-slide-up flex justify-center">
+          <PhotoUpload
+            currentUrl={photoUrl}
+            name={name || "Pet"}
+            folder="pets"
+            onUploaded={setPhotoUrl}
+            size="xl"
+            shape="circle"
+            label="Adicionar foto do pet"
+          />
+        </section>
+
         {/* ── Escolha da espécie ── */}
         <section className="animate-slide-up">
           <p className="section-label mb-3">Qual o tipo do seu pet?</p>
