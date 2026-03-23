@@ -74,6 +74,8 @@ const PLANS: Plan[] = [
 export default function PlanosPage() {
   const [currentPlan, setCurrentPlan] = useState<string>("FREE");
   const [loading, setLoading] = useState(true);
+  const [checkingOut, setCheckingOut] = useState<string | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/petshops/me")
@@ -86,10 +88,32 @@ export default function PlanosPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  function handleUpgrade(planId: string) {
-    if (planId === currentPlan) return;
-    // TODO: integrar com gateway de pagamento
-    alert(`Em breve: assinar plano ${planId}. Entre em contato pelo WhatsApp para ativar.`);
+  async function handleUpgrade(planId: string) {
+    if (planId === currentPlan || checkingOut) return;
+    setCheckingOut(planId);
+    setCheckoutError(null);
+    try {
+      const res = await fetch("/api/petshops/me/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: planId, billingType: "PIX" }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setCheckoutError(json.error || "Erro ao gerar cobrança.");
+        return;
+      }
+      if (json.paymentLink) {
+        window.location.href = json.paymentLink;
+      } else {
+        // Sandbox sem link — atualiza plano e mostra confirmação
+        setCurrentPlan(planId);
+      }
+    } catch {
+      setCheckoutError("Erro de conexão. Tente novamente.");
+    } finally {
+      setCheckingOut(null);
+    }
   }
 
   if (loading) {
@@ -176,22 +200,37 @@ export default function PlanosPage() {
                 {/* CTA */}
                 <button
                   onClick={() => handleUpgrade(plan.id)}
-                  disabled={isCurrent}
-                  className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-200 ${
+                  disabled={isCurrent || checkingOut === plan.id}
+                  className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 ${
                     isCurrent
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : isHighlight
-                      ? "btn-primary"
-                      : "bg-primary/10 text-primary hover:bg-primary/20"
+                      ? "btn-primary disabled:opacity-70"
+                      : "bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-70"
                   }`}
                 >
-                  {isCurrent ? "Plano atual" : `Assinar ${plan.name}`}
+                  {checkingOut === plan.id ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                      Aguarde...
+                    </>
+                  ) : isCurrent ? (
+                    "Plano atual"
+                  ) : (
+                    `Assinar ${plan.name}`
+                  )}
                 </button>
               </div>
             </div>
           );
         })}
       </div>
+
+      {checkoutError && (
+        <div className="mt-4 p-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600 font-medium text-center">
+          {checkoutError}
+        </div>
+      )}
 
       <p className="text-center text-xs text-gray-400 mt-6">
         Dúvidas? Fale conosco pelo WhatsApp.
