@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { MaterialIcon, PhotoUpload } from "@/components/ui";
+import { MaterialIcon } from "@/components/ui";
 
 type ShopData = {
   name: string;
@@ -26,6 +26,8 @@ export default function DadosPetShopPage() {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch("/api/petshops/me")
@@ -50,6 +52,23 @@ export default function DadosPetShopPage() {
     setForm((f) => ({ ...f, [field]: value }));
     setSuccess(false);
     setError(null);
+  }
+
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLogoUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", "logos");
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const json = await res.json();
+      if (res.ok) set("logoUrl", json.url);
+    } finally {
+      setLogoUploading(false);
+      if (logoInputRef.current) logoInputRef.current.value = "";
+    }
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -103,14 +122,34 @@ export default function DadosPetShopPage() {
         {/* ── Logo hero ── */}
         <section className="animate-slide-up bg-gradient-to-br from-primary/90 to-primary rounded-2xl p-5 flex items-center gap-4">
           <div className="flex-shrink-0">
-            <PhotoUpload
-              currentUrl={form.logoUrl || null}
-              name={form.name || "P"}
-              folder="logos"
-              onUploaded={(url) => set("logoUrl", url)}
-              size="xl"
-              shape="circle"
-              label=""
+            <button
+              type="button"
+              onClick={() => logoInputRef.current?.click()}
+              disabled={logoUploading}
+              className="relative group w-16 h-16 rounded-full overflow-hidden bg-white/20 border-2 border-white/40 flex items-center justify-center focus:outline-none disabled:opacity-70"
+            >
+              {form.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={form.logoUrl} alt={form.name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-white font-black text-2xl select-none">
+                  {(form.name || "P").charAt(0).toUpperCase()}
+                </span>
+              )}
+              <span className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-all rounded-full">
+                {logoUploading ? (
+                  <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <MaterialIcon icon="photo_camera" size="sm" className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
+              </span>
+            </button>
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleLogoUpload}
             />
           </div>
           <div className="flex-1 min-w-0 text-white">
@@ -122,10 +161,11 @@ export default function DadosPetShopPage() {
             </p>
             <button
               type="button"
-              className="mt-2 text-[11px] font-bold text-white/80 bg-white/15 px-3 py-1 rounded-full"
-              onClick={() => document.querySelector<HTMLInputElement>("input[type=file]")?.click()}
+              onClick={() => logoInputRef.current?.click()}
+              disabled={logoUploading}
+              className="mt-2 text-[11px] font-bold text-white/80 bg-white/15 px-3 py-1 rounded-full disabled:opacity-50"
             >
-              Alterar logo
+              {logoUploading ? "Enviando..." : "Alterar logo"}
             </button>
           </div>
         </section>
