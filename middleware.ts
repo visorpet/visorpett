@@ -10,7 +10,7 @@ const ROLE_ROUTES: Record<string, string> = {
 };
 
 // Rotas públicas (sem autenticação)
-const PUBLIC_ROUTES = ["/login", "/cadastro", "/esqueci-senha", "/redefinir-senha", "/", "/api/webhooks", "/booking", "/api/booking"];
+const PUBLIC_ROUTES = ["/login", "/cadastro", "/esqueci-senha", "/redefinir-senha", "/", "/api/webhooks", "/booking", "/api/booking", "/admin"];
 
 // Rotas do DONO que não exigem petShopId (onboarding)
 const DONO_NO_SHOP_ALLOWED = ["/dono/onboarding"];
@@ -18,13 +18,37 @@ const DONO_NO_SHOP_ALLOWED = ["/dono/onboarding"];
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Libera rotas públicas e assets
+  // Libera assets sempre
   if (
-    PUBLIC_ROUTES.some((r) => pathname === r || pathname.startsWith(r + "/")) ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
     pathname.startsWith("/api/auth/")
   ) {
+    return NextResponse.next();
+  }
+
+  // /admin (exato) = página de login do admin — libera, mas redireciona se já autenticado
+  if (pathname === "/admin") {
+    // Verifica sessão para redirecionar quem já está logado
+    const supabaseCheck = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return request.cookies.getAll(); },
+          setAll() {},
+        },
+      }
+    );
+    const { data: { user: checkUser } } = await supabaseCheck.auth.getUser();
+    if (checkUser?.user_metadata?.role === "SUPER_ADMIN") {
+      return NextResponse.redirect(new URL("/admin/painel", request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // Demais rotas públicas
+  if (PUBLIC_ROUTES.some((r) => pathname === r || pathname.startsWith(r + "/"))) {
     return NextResponse.next();
   }
 
@@ -55,8 +79,11 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Sem sessão → redireciona para login
+  // Sem sessão → redireciona para login (admin vai para /admin, demais para /login)
   if (!user) {
+    if (pathname.startsWith("/admin/")) {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
