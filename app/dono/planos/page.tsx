@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MaterialIcon, Badge } from "@/components/ui";
 
@@ -73,7 +72,6 @@ const PLANS: Plan[] = [
 ];
 
 export default function PlanosPage() {
-  const router = useRouter();
   const [currentPlan, setCurrentPlan] = useState<string>("FREE");
   const [loading, setLoading] = useState(true);
 
@@ -104,7 +102,7 @@ export default function PlanosPage() {
 
   return (
     <div className="page-container pb-24 font-sans">
-      <PageHeader title="Planos" showBack onBack={() => router.push("/dono/perfil")} />
+      <PageHeader title="Planos" showBack backHref="/dono/perfil" />
 
       <p className="text-sm text-gray-500 mt-1 mb-6">
         Escolha o plano ideal para o seu pet shop.

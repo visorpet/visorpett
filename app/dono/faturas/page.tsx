@@ -51,7 +51,7 @@ export default function FaturasPage() {
 
   return (
     <div className="page-container pb-24 font-sans">
-      <PageHeader title="Minha Assinatura" showBack onBack={() => router.push("/dono/perfil")} />
+      <PageHeader title="Minha Assinatura" showBack backHref="/dono/perfil" />
 
       {/* ── Status da assinatura ── */}
       <section className="mt-4 animate-slide-up">

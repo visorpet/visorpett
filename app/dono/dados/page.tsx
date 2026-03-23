@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MaterialIcon, PhotoUpload } from "@/components/ui";
 
@@ -20,7 +19,6 @@ const BRAZIL_STATES = [
 ];
 
 export default function DadosPetShopPage() {
-  const router = useRouter();
   const [form, setForm] = useState<ShopData>({
     name: "", phone: "", address: "", city: "", state: "", logoUrl: "",
   });
@@ -93,7 +91,7 @@ export default function DadosPetShopPage() {
 
   return (
     <div className="page-container pb-24 font-sans">
-      <PageHeader title="Dados do Pet Shop" showBack onBack={() => router.push("/dono/perfil")} />
+      <PageHeader title="Dados do Pet Shop" showBack backHref="/dono/perfil" />
 
       <form onSubmit={handleSave} className="flex flex-col gap-6 mt-2">
         {/* ── Logo ── */}

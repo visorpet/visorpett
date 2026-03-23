@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MaterialIcon } from "@/components/ui";
 
@@ -37,7 +36,6 @@ for (let h = 6; h <= 23; h++) {
 }
 
 export default function HorariosPage() {
-  const router = useRouter();
   const [hours, setHours] = useState<Hours>(DEFAULT_HOURS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -95,7 +93,7 @@ export default function HorariosPage() {
 
   return (
     <div className="page-container pb-28 font-sans">
-      <PageHeader title="Horários de Funcionamento" showBack onBack={() => router.push("/dono/perfil")} />
+      <PageHeader title="Horários de Funcionamento" showBack backHref="/dono/perfil" />
 
       <p className="text-sm text-gray-500 mb-5 mt-1">
         Configure os dias e horários em que seu pet shop atende.

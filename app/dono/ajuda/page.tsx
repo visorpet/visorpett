@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MaterialIcon } from "@/components/ui";
 
@@ -72,11 +71,9 @@ function FAQItem({ item }: { item: FAQ }) {
 }
 
 export default function AjudaPage() {
-  const router = useRouter();
-
   return (
     <div className="page-container pb-24 font-sans">
-      <PageHeader title="Central de Ajuda" showBack onBack={() => router.push("/dono/perfil")} />
+      <PageHeader title="Central de Ajuda" showBack backHref="/dono/perfil" />
 
       {/* ── Contato rápido ── */}
       <section className="mt-4 animate-slide-up">
