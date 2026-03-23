@@ -1,8 +1,19 @@
 {
-  "language": "portuguese",
   "permissions": {
     "allow": [
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "Bash(VERCEL_TOKEN=\"vca_11MosLTzgdcrmvmqY4B4FtFiiYC7g3vprg9B4MDr1aFRo7OIfR2BX8ed\" curl -s \"https://api.vercel.com/v9/projects?limit=10\" -H \"Authorization: Bearer $VERCEL_TOKEN\")",
+      "Bash(VERCEL_TOKEN=\"vca_11MosLTzgdcrmvmqY4B4FtFiiYC7g3vprg9B4MDr1aFRo7OIfR2BX8ed\" curl -s \"https://api.vercel.com/v9/projects\" -H \"Authorization: Bearer $VERCEL_TOKEN\")",
+      "Bash(npx --yes vercel@latest --version)",
+      "Bash(~/.local/bin/vercel whoami:*)",
+      "Bash(~/.local/bin/vercel project:*)",
+      "Bash(~/.local/bin/vercel env:*)",
+      "Read(//dev/**)",
+      "Bash(TOKEN=\"vca_8ioC2UNRtnVEAjoT0JmOPeWWGGLCHqq7GpIXjGQPBrL8wzkVOL28aEMC\" curl -s \"https://api.vercel.com/v9/projects/visorpett\" -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(TOKEN=\"vca_8ioC2UNRtnVEAjoT0JmOPeWWGGLCHqq7GpIXjGQPBrL8wzkVOL28aEMC\" TEAM=\"team_yCmWxkFp9DizTHq0kepX9ga3\" __NEW_LINE_4c473e5433e5eabd__ curl -s \"https://api.vercel.com/v9/projects/visorpett/env?teamId=$TEAM\" -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(PGPASSWORD='VisorPet@26*' psql \"postgresql://postgres.dwaypkseipzzekvkpnff@aws-1-sa-east-1.pooler.supabase.com:5432/postgres\" -c \"SELECT version\\(\\);\")",
+      "Bash(TOKEN=\"vca_8ioC2UNRtnVEAjoT0JmOPeWWGGLCHqq7GpIXjGQPBrL8wzkVOL28aEMC\" TEAM=\"team_yCmWxkFp9DizTHq0kepX9ga3\" curl -s \"https://api.vercel.com/v10/projects/visorpett/env?teamId=$TEAM\" -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" -X POST -d '{\"\"\"\"key\"\"\"\":\"\"\"\"ASAAS_WEBHOOK_TOKEN\"\"\"\",\"\"\"\"value\"\"\"\":\"\"\"\"whsec_nL-JBia6qYMPbhdJyxBfyY3OX0yvyTg1o6CkC_MLrmg\"\"\"\",\"\"\"\"type\"\"\"\":\"\"\"\"encrypted\"\"\"\",\"\"\"\"target\"\"\"\":[\"\"\"\"preview\"\"\"\"]}')"
     ]
-  }
+  },
+  "language": "portuguese"
 }
