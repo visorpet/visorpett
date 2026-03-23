@@ -34,6 +34,18 @@ export async function POST(request: Request) {
     const path = `${folder}/${session.user.id}/${timestamp}.${ext}`;
 
     const db = createAdminClient();
+
+    // Garante que o bucket existe (cria se não existir)
+    const { data: buckets } = await db.storage.listBuckets();
+    const bucketExists = buckets?.some((b) => b.name === BUCKET);
+    if (!bucketExists) {
+      const { error: bucketError } = await db.storage.createBucket(BUCKET, { public: true });
+      if (bucketError && bucketError.message !== "The resource already exists") {
+        console.error("[BUCKET_CREATE_ERROR]", bucketError);
+        return NextResponse.json({ error: "Erro ao configurar storage" }, { status: 500 });
+      }
+    }
+
     const arrayBuffer = await file.arrayBuffer();
     const buffer = new Uint8Array(arrayBuffer);
 
