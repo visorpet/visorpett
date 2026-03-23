@@ -12,7 +12,11 @@
       "Bash(TOKEN=\"vca_8ioC2UNRtnVEAjoT0JmOPeWWGGLCHqq7GpIXjGQPBrL8wzkVOL28aEMC\" curl -s \"https://api.vercel.com/v9/projects/visorpett\" -H \"Authorization: Bearer $TOKEN\")",
       "Bash(TOKEN=\"vca_8ioC2UNRtnVEAjoT0JmOPeWWGGLCHqq7GpIXjGQPBrL8wzkVOL28aEMC\" TEAM=\"team_yCmWxkFp9DizTHq0kepX9ga3\" __NEW_LINE_4c473e5433e5eabd__ curl -s \"https://api.vercel.com/v9/projects/visorpett/env?teamId=$TEAM\" -H \"Authorization: Bearer $TOKEN\")",
       "Bash(PGPASSWORD='VisorPet@26*' psql \"postgresql://postgres.dwaypkseipzzekvkpnff@aws-1-sa-east-1.pooler.supabase.com:5432/postgres\" -c \"SELECT version\\(\\);\")",
-      "Bash(TOKEN=\"vca_8ioC2UNRtnVEAjoT0JmOPeWWGGLCHqq7GpIXjGQPBrL8wzkVOL28aEMC\" TEAM=\"team_yCmWxkFp9DizTHq0kepX9ga3\" curl -s \"https://api.vercel.com/v10/projects/visorpett/env?teamId=$TEAM\" -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" -X POST -d '{\"\"\"\"key\"\"\"\":\"\"\"\"ASAAS_WEBHOOK_TOKEN\"\"\"\",\"\"\"\"value\"\"\"\":\"\"\"\"whsec_nL-JBia6qYMPbhdJyxBfyY3OX0yvyTg1o6CkC_MLrmg\"\"\"\",\"\"\"\"type\"\"\"\":\"\"\"\"encrypted\"\"\"\",\"\"\"\"target\"\"\"\":[\"\"\"\"preview\"\"\"\"]}')"
+      "Bash(TOKEN=\"vca_8ioC2UNRtnVEAjoT0JmOPeWWGGLCHqq7GpIXjGQPBrL8wzkVOL28aEMC\" TEAM=\"team_yCmWxkFp9DizTHq0kepX9ga3\" curl -s \"https://api.vercel.com/v10/projects/visorpett/env?teamId=$TEAM\" -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" -X POST -d '{\"\"\"\"key\"\"\"\":\"\"\"\"ASAAS_WEBHOOK_TOKEN\"\"\"\",\"\"\"\"value\"\"\"\":\"\"\"\"whsec_nL-JBia6qYMPbhdJyxBfyY3OX0yvyTg1o6CkC_MLrmg\"\"\"\",\"\"\"\"type\"\"\"\":\"\"\"\"encrypted\"\"\"\",\"\"\"\"target\"\"\"\":[\"\"\"\"preview\"\"\"\"]}')",
+      "Bash(head -20 find /home/matheus/visorpett/lib -name session* -o -name auth*)",
+      "Bash(cp /tmp/set_super_admin.js /home/matheus/visorpett/set_super_admin.js)",
+      "Bash(node set_super_admin.js)",
+      "Bash(grep -rn \"SUPER_ADMIN\\\\|admin\" /home/matheus/visorpett/app/api/auth --include=*.ts)"
     ]
   },
   "language": "portuguese"
