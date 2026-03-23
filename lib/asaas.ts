@@ -96,6 +96,13 @@ export async function getAsaasCustomer(customerId: string) {
   return asaasFetch(`/customers/${customerId}`);
 }
 
+export async function updateAsaasCustomer(customerId: string, input: Partial<AsaasCustomerInput>) {
+  return asaasFetch(`/customers/${customerId}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
 // ─── Subscriptions ────────────────────────────────────────────────────────────
 
 export type AsaasBillingType = "BOLETO" | "CREDIT_CARD" | "PIX";

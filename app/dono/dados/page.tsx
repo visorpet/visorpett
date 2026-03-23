@@ -314,13 +314,10 @@ export default function DadosPetShopPage() {
             Dados salvos com sucesso!
           </div>
         )}
-      </form>
 
-      {/* Botão fixo no rodapé */}
-      <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 pt-3 bg-white/90 backdrop-blur-sm border-t border-gray-100 z-10">
+        {/* Botão salvar dentro do formulário */}
         <button
           type="submit"
-          form="dados-form"
           disabled={saving}
           className="btn-primary w-full py-4 text-base disabled:opacity-50 shadow-lg shadow-primary/20"
         >
@@ -332,7 +329,7 @@ export default function DadosPetShopPage() {
             <><MaterialIcon icon="save" size="sm" /> Salvar Alterações</>
           )}
         </button>
-      </div>
+      </form>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import {
   createAsaasCustomer,
   findAsaasCustomer,
+  updateAsaasCustomer,
   createAsaasSubscription,
   PLAN_PRICES,
 } from "@/lib/asaas";
@@ -93,17 +94,19 @@ export async function POST(request: Request) {
     ownerEmail = ownerUser?.email ?? undefined;
   } catch { /* e-mail é opcional */ }
 
-  // ─── Asaas: cria/reutiliza cliente ───────────────────────
+  // Valida CPF/CNPJ antes de qualquer chamada ao Asaas
+  const cpfCnpj = (shop as any).cpfCnpj?.replace(/\D/g, "") || undefined;
+  if (!cpfCnpj) {
+    return NextResponse.json({
+      error: "Preencha o CPF ou CNPJ do pet shop em Dados do Pet Shop antes de assinar.",
+    }, { status: 422 });
+  }
+
+  // ─── Asaas: cria/atualiza cliente ────────────────────────
   let customer: any;
   try {
     customer = await findAsaasCustomer(petShopId);
     if (!customer) {
-      const cpfCnpj = (shop as any).cpfCnpj?.replace(/\D/g, "") || undefined;
-      if (!cpfCnpj) {
-        return NextResponse.json({
-          error: "Preencha o CPF ou CNPJ do pet shop em Dados do Pet Shop antes de assinar.",
-        }, { status: 422 });
-      }
       customer = await createAsaasCustomer({
         name: shop.name,
         email: ownerEmail,
@@ -111,6 +114,11 @@ export async function POST(request: Request) {
         cpfCnpj,
         externalReference: petShopId,
       });
+    } else {
+      // Garante que o cliente existente tem CPF/CNPJ atualizado
+      if (!customer.cpfCnpj) {
+        await updateAsaasCustomer(customer.id, { cpfCnpj });
+      }
     }
   } catch (err) {
     const { message, status } = parseAsaasError(err);
