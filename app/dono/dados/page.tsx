@@ -8,6 +8,7 @@ import { usePetShop } from "../_petshop-context";
 type ShopData = {
   name: string;
   phone: string;
+  cpfCnpj: string;
   address: string;
   city: string;
   state: string;
@@ -21,7 +22,7 @@ const BRAZIL_STATES = [
 
 export default function DadosPetShopPage() {
   const [form, setForm] = useState<ShopData>({
-    name: "", phone: "", address: "", city: "", state: "", logoUrl: "",
+    name: "", phone: "", cpfCnpj: "", address: "", city: "", state: "", logoUrl: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -40,6 +41,7 @@ export default function DadosPetShopPage() {
           setForm({
             name:    d.name    ?? "",
             phone:   d.phone   ?? "",
+            cpfCnpj: d.cpfCnpj ?? "",
             address: d.address ?? "",
             city:    d.city    ?? "",
             state:   d.state   ?? "",
@@ -99,6 +101,7 @@ export default function DadosPetShopPage() {
         body: JSON.stringify({
           name:    form.name,
           phone:   form.phone   || undefined,
+          cpfCnpj: form.cpfCnpj || undefined,
           address: form.address || undefined,
           city:    form.city    || undefined,
           state:   form.state   || undefined,
@@ -223,6 +226,25 @@ export default function DadosPetShopPage() {
                   onChange={(e) => set("phone", e.target.value)}
                   placeholder="(11) 99999-9999"
                   className="field-input pl-9"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="field-label">
+                CPF / CNPJ <span className="text-gray-400 font-normal text-[11px]">(necessário para pagamentos)</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                  <MaterialIcon icon="badge" size="sm" className="text-gray-400" />
+                </span>
+                <input
+                  type="text"
+                  value={form.cpfCnpj}
+                  onChange={(e) => set("cpfCnpj", e.target.value)}
+                  placeholder="00.000.000/0001-00 ou 000.000.000-00"
+                  className="field-input pl-9"
+                  maxLength={18}
                 />
               </div>
             </div>

@@ -69,6 +69,7 @@ model PetShop {
   slug         String        @unique
   logoUrl      String?
   phone        String?
+  cpfCnpj      String?
   address      String?
   city         String?
   state        String?

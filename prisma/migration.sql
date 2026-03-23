@@ -306,3 +306,7 @@ ORDER BY tablename;
 ALTER TABLE "Subscription"
   ADD COLUMN IF NOT EXISTS "asaasCustomerId"     TEXT,
   ADD COLUMN IF NOT EXISTS "asaasSubscriptionId" TEXT;
+
+-- ─── Migração: adiciona cpfCnpj no PetShop ───────────────────
+ALTER TABLE "PetShop"
+  ADD COLUMN IF NOT EXISTS "cpfCnpj" TEXT;

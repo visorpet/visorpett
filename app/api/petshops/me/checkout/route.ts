@@ -73,7 +73,7 @@ export async function POST(request: Request) {
   // Busca pet shop
   const { data: shop } = await db
     .from("PetShop")
-    .select("id, name, phone, ownerId")
+    .select("id, name, phone, cpfCnpj, ownerId")
     .eq("id", petShopId)
     .maybeSingle();
 
@@ -98,10 +98,17 @@ export async function POST(request: Request) {
   try {
     customer = await findAsaasCustomer(petShopId);
     if (!customer) {
+      const cpfCnpj = (shop as any).cpfCnpj?.replace(/\D/g, "") || undefined;
+      if (!cpfCnpj) {
+        return NextResponse.json({
+          error: "Preencha o CPF ou CNPJ do pet shop em Dados do Pet Shop antes de assinar.",
+        }, { status: 422 });
+      }
       customer = await createAsaasCustomer({
         name: shop.name,
         email: ownerEmail,
         phone: (shop as any).phone ?? undefined,
+        cpfCnpj,
         externalReference: petShopId,
       });
     }

@@ -8,6 +8,7 @@ const petshopUpdateSchema = z.object({
   slug:          z.string().min(3).optional(),
   logoUrl:       z.string().url().optional().or(z.literal("")),
   phone:         z.string().optional(),
+  cpfCnpj:       z.string().optional(),
   address:       z.string().optional(),
   city:          z.string().optional(),
   state:         z.string().optional(),
