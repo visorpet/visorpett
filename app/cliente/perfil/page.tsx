@@ -82,8 +82,8 @@ export default function PerfilPage() {
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden divide-y divide-gray-50">
             <MenuAction icon="pets" label="Meus Pets" onClick={() => router.push("/cliente/meus-pets")} />
             <MenuAction icon="history" label="Histórico de Serviços" onClick={() => router.push("/cliente/historico")} />
-            <MenuAction icon="redeem" label="Indicações" badge={`${user.referralCount} indic.`} onClick={() => {}} />
-            <MenuAction icon="star" label="Avaliações" onClick={() => {}} />
+            <MenuAction icon="redeem" label="Indicações" badge={`${user.referralCount} indic.`} onClick={() => router.push("/cliente/indicacoes")} />
+            <MenuAction icon="star" label="Avaliações" onClick={() => router.push("/cliente/avaliacoes")} />
           </div>
         </div>
 
