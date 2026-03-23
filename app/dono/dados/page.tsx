@@ -34,11 +34,11 @@ export default function DadosPetShopPage() {
         if (json.data) {
           const d = json.data;
           setForm({
-            name: d.name ?? "",
-            phone: d.phone ?? "",
+            name:    d.name    ?? "",
+            phone:   d.phone   ?? "",
             address: d.address ?? "",
-            city: d.city ?? "",
-            state: d.state ?? "",
+            city:    d.city    ?? "",
+            state:   d.state   ?? "",
             logoUrl: d.logoUrl ?? "",
           });
         }
@@ -62,11 +62,11 @@ export default function DadosPetShopPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: form.name,
-          phone: form.phone || undefined,
+          name:    form.name,
+          phone:   form.phone   || undefined,
           address: form.address || undefined,
-          city: form.city || undefined,
-          state: form.state || undefined,
+          city:    form.city    || undefined,
+          state:   form.state   || undefined,
           logoUrl: form.logoUrl || undefined,
         }),
       });
@@ -83,126 +83,178 @@ export default function DadosPetShopPage() {
 
   if (loading) {
     return (
-      <div className="page-container flex items-center justify-center min-h-[60vh]">
-        <span className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      <div className="page-container">
+        <PageHeader title="Dados do Pet Shop" showBack backHref="/dono/perfil" />
+        <div className="flex flex-col gap-4 mt-4 animate-pulse px-4">
+          <div className="h-32 bg-gray-100 rounded-2xl" />
+          <div className="h-40 bg-gray-100 rounded-2xl" />
+          <div className="h-40 bg-gray-100 rounded-2xl" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="page-container pb-24 font-sans">
+    <div className="page-container pb-32 font-sans">
       <PageHeader title="Dados do Pet Shop" showBack backHref="/dono/perfil" />
 
-      <form onSubmit={handleSave} className="flex flex-col gap-6 mt-2">
-        {/* ── Logo ── */}
-        <section className="animate-slide-up flex justify-center py-2">
-          <PhotoUpload
-            currentUrl={form.logoUrl || null}
-            name={form.name || "Pet Shop"}
-            folder="logos"
-            onUploaded={(url) => set("logoUrl", url)}
-            size="2xl"
-            shape="circle"
-            label="Adicionar logo"
-          />
-        </section>
+      <form onSubmit={handleSave} className="flex flex-col gap-4 px-4 mt-2">
 
-        {/* ── Informações básicas ── */}
-        <section className="animate-slide-up bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
-          <p className="section-label">Informações da Loja</p>
-
-          <div>
-            <label className="field-label">Nome do Pet Shop <span className="text-red-400">*</span></label>
-            <input
-              type="text"
-              value={form.name}
-              onChange={(e) => set("name", e.target.value)}
-              placeholder="Ex: Pet Shop do João"
-              className="field-input"
-              required
+        {/* ── Logo hero ── */}
+        <section className="animate-slide-up bg-gradient-to-br from-primary/90 to-primary rounded-2xl p-5 flex items-center gap-4">
+          <div className="flex-shrink-0">
+            <PhotoUpload
+              currentUrl={form.logoUrl || null}
+              name={form.name || "P"}
+              folder="logos"
+              onUploaded={(url) => set("logoUrl", url)}
+              size="xl"
+              shape="circle"
+              label=""
             />
           </div>
+          <div className="flex-1 min-w-0 text-white">
+            <p className="font-black text-lg leading-tight truncate">
+              {form.name || "Meu Pet Shop"}
+            </p>
+            <p className="text-white/70 text-xs mt-0.5">
+              {[form.city, form.state].filter(Boolean).join(", ") || "Sem localização definida"}
+            </p>
+            <button
+              type="button"
+              className="mt-2 text-[11px] font-bold text-white/80 bg-white/15 px-3 py-1 rounded-full"
+              onClick={() => document.querySelector<HTMLInputElement>("input[type=file]")?.click()}
+            >
+              Alterar logo
+            </button>
+          </div>
+        </section>
 
-          <div>
-            <label className="field-label">Telefone / WhatsApp</label>
-            <input
-              type="tel"
-              value={form.phone}
-              onChange={(e) => set("phone", e.target.value)}
-              placeholder="(11) 99999-9999"
-              className="field-input"
-            />
+        {/* ── Informações da loja ── */}
+        <section className="animate-slide-up bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2 px-5 pt-5 pb-3 border-b border-gray-50">
+            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+              <MaterialIcon icon="storefront" size="sm" className="text-primary" />
+            </div>
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Informações da Loja</p>
+          </div>
+
+          <div className="p-5 flex flex-col gap-4">
+            <div>
+              <label className="field-label">
+                Nome do Pet Shop <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="text"
+                value={form.name}
+                onChange={(e) => set("name", e.target.value)}
+                placeholder="Ex: Pet Shop do João"
+                className="field-input"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="field-label">Telefone / WhatsApp</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                  <MaterialIcon icon="phone" size="sm" className="text-gray-400" />
+                </span>
+                <input
+                  type="tel"
+                  value={form.phone}
+                  onChange={(e) => set("phone", e.target.value)}
+                  placeholder="(11) 99999-9999"
+                  className="field-input pl-9"
+                />
+              </div>
+            </div>
           </div>
         </section>
 
         {/* ── Endereço ── */}
-        <section className="animate-slide-up bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4">
-          <p className="section-label">Endereço</p>
-
-          <div>
-            <label className="field-label">Endereço completo</label>
-            <input
-              type="text"
-              value={form.address}
-              onChange={(e) => set("address", e.target.value)}
-              placeholder="Rua, número, bairro..."
-              className="field-input"
-            />
+        <section className="animate-slide-up bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2 px-5 pt-5 pb-3 border-b border-gray-50">
+            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+              <MaterialIcon icon="location_on" size="sm" className="text-primary" />
+            </div>
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Endereço</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="p-5 flex flex-col gap-4">
             <div>
-              <label className="field-label">Cidade</label>
+              <label className="field-label">Endereço completo</label>
               <input
                 type="text"
-                value={form.city}
-                onChange={(e) => set("city", e.target.value)}
-                placeholder="São Paulo"
+                value={form.address}
+                onChange={(e) => set("address", e.target.value)}
+                placeholder="Rua, número, bairro..."
                 className="field-input"
               />
             </div>
-            <div>
-              <label className="field-label">Estado</label>
-              <select
-                value={form.state}
-                onChange={(e) => set("state", e.target.value)}
-                className="field-input"
-              >
-                <option value="">UF</option>
-                {BRAZIL_STATES.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="field-label">Cidade</label>
+                <input
+                  type="text"
+                  value={form.city}
+                  onChange={(e) => set("city", e.target.value)}
+                  placeholder="São Paulo"
+                  className="field-input"
+                />
+              </div>
+              <div>
+                <label className="field-label">Estado</label>
+                <select
+                  value={form.state}
+                  onChange={(e) => set("state", e.target.value)}
+                  className="field-input"
+                >
+                  <option value="">UF</option>
+                  {BRAZIL_STATES.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </section>
 
+        {/* Feedback */}
         {error && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-medium border border-red-100 flex gap-2 items-center">
-            <MaterialIcon icon="error_outline" />
+          <div className="animate-slide-up bg-red-50 text-red-600 px-4 py-3 rounded-xl text-sm font-medium border border-red-100 flex gap-2 items-center">
+            <MaterialIcon icon="error_outline" size="sm" />
             {error}
           </div>
         )}
 
         {success && (
-          <div className="bg-emerald-50 text-emerald-700 p-4 rounded-xl text-sm font-medium border border-emerald-100 flex gap-2 items-center">
-            <MaterialIcon icon="check_circle" />
+          <div className="animate-slide-up bg-emerald-50 text-emerald-700 px-4 py-3 rounded-xl text-sm font-medium border border-emerald-100 flex gap-2 items-center">
+            <MaterialIcon icon="check_circle" size="sm" />
             Dados salvos com sucesso!
           </div>
         )}
+      </form>
 
+      {/* Botão fixo no rodapé */}
+      <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 pt-3 bg-white/90 backdrop-blur-sm border-t border-gray-100 z-10">
         <button
           type="submit"
+          form="dados-form"
           disabled={saving}
-          className="btn-primary w-full py-4 text-base disabled:opacity-50"
+          onClick={handleSave}
+          className="btn-primary w-full py-4 text-base disabled:opacity-50 shadow-lg shadow-primary/20"
         >
           {saving ? (
             <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Salvando...</>
+          ) : success ? (
+            <><MaterialIcon icon="check_circle" size="sm" /> Salvo!</>
           ) : (
             <><MaterialIcon icon="save" size="sm" /> Salvar Alterações</>
           )}
         </button>
-      </form>
+      </div>
     </div>
   );
 }
