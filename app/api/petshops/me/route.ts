@@ -33,15 +33,25 @@ export async function GET() {
     if (!petShopId) return NextResponse.json({ error: "Você não possui um pet shop" }, { status: 404 });
 
     const db = createAdminClient();
-    const { data: petShop, error } = await db
-      .from("PetShop")
-      .select("*, subscription:Subscription!petShopId(*), groomers:Groomer!petShopId(*), services:Service!petShopId(*)")
-      .eq("id", petShopId)
-      .maybeSingle();
+
+    // Queries separadas — joins com FK User!ownerId não estão no cache do Supabase PostgREST
+    const [
+      { data: petShop, error },
+      { data: subscription },
+      { data: groomers },
+      { data: services },
+    ] = await Promise.all([
+      db.from("PetShop").select("*").eq("id", petShopId).maybeSingle(),
+      db.from("Subscription").select("*").eq("petShopId", petShopId).maybeSingle(),
+      db.from("Groomer").select("*").eq("petShopId", petShopId),
+      db.from("Service").select("*").eq("petShopId", petShopId).eq("active", true),
+    ]);
 
     if (error) throw error;
 
-    return NextResponse.json({ data: petShop });
+    return NextResponse.json({
+      data: { ...petShop, subscription, groomers: groomers ?? [], services: services ?? [] },
+    });
   } catch (error) {
     console.error("Error fetching pet shop info:", error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });

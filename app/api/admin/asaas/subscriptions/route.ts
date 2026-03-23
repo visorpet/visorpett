@@ -17,6 +17,7 @@ import {
   listAsaasSubscriptions,
   PLAN_PRICES,
 } from "@/lib/asaas";
+import { createClient as createAuthClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
@@ -55,10 +56,10 @@ export async function POST(req: Request) {
 
   const db = createAdminClient();
 
-  // Busca dados do pet shop e dono
+  // Busca dados do pet shop (sem join — FK não exposta no Supabase cache)
   const { data: shop } = await db
     .from("PetShop")
-    .select("id, name, phone, owner:User!ownerId(name, email)")
+    .select("id, name, phone, ownerId")
     .eq("id", petShopId)
     .maybeSingle();
 
@@ -66,7 +67,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Pet shop não encontrado" }, { status: 404 });
   }
 
-  const owner = Array.isArray(shop.owner) ? shop.owner[0] : shop.owner;
+  // Busca email do dono via Auth Admin
+  let ownerEmail: string | undefined;
+  try {
+    const authAdmin = createAuthClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+    const { data: { user: ownerUser } } = await authAdmin.auth.admin.getUserById(
+      (shop as any).ownerId
+    );
+    ownerEmail = ownerUser?.email ?? undefined;
+  } catch { /* ignora erro — e-mail é opcional no Asaas */ }
 
   try {
     // 1. Verifica se já tem cliente Asaas (pelo externalReference = petShopId)
@@ -75,8 +88,8 @@ export async function POST(req: Request) {
     if (!customer) {
       customer = await createAsaasCustomer({
         name:              shop.name,
-        email:             owner?.email ?? undefined,
-        phone:             shop.phone   ?? undefined,
+        email:             ownerEmail,
+        phone:             (shop as any).phone ?? undefined,
         externalReference: petShopId,
       });
     }
