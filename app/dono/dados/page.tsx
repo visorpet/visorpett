@@ -137,7 +137,7 @@ export default function DadosPetShopPage() {
     <div className="page-container pb-32 font-sans">
       <PageHeader title="Dados do Pet Shop" showBack backHref="/dono/perfil" />
 
-      <form onSubmit={handleSave} className="flex flex-col gap-4 px-4 mt-2">
+      <form id="dados-form" onSubmit={handleSave} className="flex flex-col gap-4 px-4 mt-2">
 
         {/* ── Logo hero ── */}
         <section className="animate-slide-up bg-gradient-to-br from-primary/90 to-primary rounded-2xl p-5 flex items-center gap-4">
@@ -322,7 +322,6 @@ export default function DadosPetShopPage() {
           type="submit"
           form="dados-form"
           disabled={saving}
-          onClick={handleSave}
           className="btn-primary w-full py-4 text-base disabled:opacity-50 shadow-lg shadow-primary/20"
         >
           {saving ? (
