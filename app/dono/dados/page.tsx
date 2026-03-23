@@ -61,15 +61,26 @@ export default function DadosPetShopPage() {
     if (!file) return;
     setLogoUploading(true);
     try {
+      // 1. Upload do arquivo
       const fd = new FormData();
       fd.append("file", file);
       fd.append("folder", "logos");
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
-      const json = await res.json();
-      if (res.ok) {
-        set("logoUrl", json.url);
-        refreshShop();
-      }
+      const uploadRes = await fetch("/api/upload", { method: "POST", body: fd });
+      const uploadJson = await uploadRes.json();
+      if (!uploadRes.ok) return;
+
+      const url = uploadJson.url;
+
+      // 2. Salva imediatamente no banco (não espera o botão Salvar)
+      await fetch("/api/petshops/me", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ logoUrl: url }),
+      });
+
+      // 3. Atualiza form local e contexto global
+      set("logoUrl", url);
+      refreshShop();
     } finally {
       setLogoUploading(false);
       if (logoInputRef.current) logoInputRef.current.value = "";
