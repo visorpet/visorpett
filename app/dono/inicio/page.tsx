@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { usePetShop } from "../_petshop-context";
 import { StatCard, BarChart, Badge, Avatar, MaterialIcon } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils";
 import type { AppointmentStatus } from "@/types";
@@ -96,8 +97,9 @@ export default function DonoInicioPage() {
     loadDashboard();
   }, []);
 
-  const shopName      = petShop?.name ?? "Meu PetShop";
-  const shopLogo      = petShop?.logoUrl;
+  const { shopMeta } = usePetShop();
+  const shopName      = shopMeta.name ?? petShop?.name ?? "Meu PetShop";
+  const shopLogo      = shopMeta.logoUrl ?? petShop?.logoUrl;
   const monthRevenue  = metrics?.monthRevenue ?? 0;
   const inService     = metrics?.inService ?? 0;
   const inactiveCount = metrics?.inactiveClients ?? 0;

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { usePetShop } from "../_petshop-context";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MaterialIcon, PhotoUpload } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
@@ -40,6 +41,7 @@ function MenuItem({ icon, label, badge, danger, href, onClick }: {
 
 export default function DonoPerfilPage() {
   const router = useRouter();
+  const { shopMeta, refreshShop } = usePetShop();
   const [shop, setShop] = useState<PetShop | null>(null);
   const [groomerCount, setGroomerCount] = useState(0);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -57,6 +59,11 @@ export default function DonoPerfilPage() {
       .catch(() => {});
   }, []);
 
+  // Sincroniza logoUrl com o contexto global
+  useEffect(() => {
+    if (shopMeta.logoUrl !== undefined) setLogoUrl(shopMeta.logoUrl ?? null);
+  }, [shopMeta.logoUrl]);
+
   async function handleLogoUploaded(url: string) {
     setLogoUrl(url);
     await fetch("/api/petshops/me", {
@@ -65,6 +72,7 @@ export default function DonoPerfilPage() {
       body: JSON.stringify({ logoUrl: url }),
     });
     setShop((s) => s ? { ...s, logoUrl: url } : s);
+    refreshShop();
   }
 
   async function handleSignOut() {

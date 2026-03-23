@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MaterialIcon } from "@/components/ui";
+import { usePetShop } from "../_petshop-context";
 
 type ShopData = {
   name: string;
@@ -28,6 +29,7 @@ export default function DadosPetShopPage() {
   const [error, setError] = useState<string | null>(null);
   const [logoUploading, setLogoUploading] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const { refreshShop } = usePetShop();
 
   useEffect(() => {
     fetch("/api/petshops/me")
@@ -64,7 +66,10 @@ export default function DadosPetShopPage() {
       fd.append("folder", "logos");
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const json = await res.json();
-      if (res.ok) set("logoUrl", json.url);
+      if (res.ok) {
+        set("logoUrl", json.url);
+        refreshShop();
+      }
     } finally {
       setLogoUploading(false);
       if (logoInputRef.current) logoInputRef.current.value = "";
@@ -93,6 +98,7 @@ export default function DadosPetShopPage() {
       if (!res.ok) { setError(json.error || "Erro ao salvar."); return; }
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
+      refreshShop();
     } catch {
       setError("Erro de conexão.");
     } finally {
