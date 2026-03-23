@@ -3,16 +3,20 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@/lib/supabase/useUser";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { Avatar, Badge, MaterialIcon, ProgressBar } from "@/components/ui";
+import { Avatar, Badge, MaterialIcon } from "@/components/ui";
 import { cn, formatDate } from "@/lib/utils";
 
 export default function PetProntuarioPage({ params }: { params: { id: string } }) {
   const { user } = useUser();
+  const router = useRouter();
   const [pet, setPet] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"historico" | "vacinas" | "obs">("historico");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     async function fetchPet() {
@@ -60,24 +64,72 @@ export default function PetProntuarioPage({ params }: { params: { id: string } }
     );
   }
 
-  const age = pet.birthDate 
-    ? (new Date().getFullYear() - new Date(pet.birthDate).getFullYear()) 
+  const age = pet.birthDate
+    ? new Date().getFullYear() - new Date(pet.birthDate).getFullYear()
     : 0;
 
   const history = pet.appointments || [];
   const vaccines = pet.vaccines || [];
   const medicalNotes = pet.medicalNotes || [];
 
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/pets/${params.id}`, { method: "DELETE" });
+      if (res.ok) router.push("/cliente/meus-pets");
+    } finally {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  }
+
   return (
     <div className="page-container font-sans">
-      <PageHeader 
-        title="Prontuário" 
-        userAvatar={{ 
-          name: user?.name || "Tutor", 
+      <PageHeader
+        title={pet.name}
+        showBack
+        userAvatar={{
+          name: user?.name || "Tutor",
           src: user?.image || undefined,
-          href: "/cliente/perfil" 
-        }} 
+          href: "/cliente/perfil",
+        }}
+        rightAction={{
+          icon: "edit",
+          label: "Editar",
+          href: `/cliente/meus-pets/${params.id}/editar`,
+        }}
       />
+
+      {/* Modal de confirmação de exclusão */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm px-4 pb-8">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl animate-slide-up">
+            <div className="flex flex-col items-center text-center gap-3 mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center">
+                <MaterialIcon icon="delete_forever" size="lg" className="text-red-500" />
+              </div>
+              <h3 className="font-black text-gray-900 text-lg">Excluir {pet.name}?</h3>
+              <p className="text-sm text-gray-500">Esta ação não pode ser desfeita. Todos os dados do pet serão removidos.</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 btn-secondary py-3 rounded-2xl"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 bg-red-500 text-white font-bold py-3 rounded-2xl disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {deleting ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <MaterialIcon icon="delete" size="sm" />}
+                Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Pet Hero ── */}
       <section className="animate-slide-up">
@@ -241,6 +293,17 @@ export default function PetProntuarioPage({ params }: { params: { id: string } }
           </div>
         )}
       </section>
+
+      {/* Botão excluir */}
+      <div className="px-1 pb-10">
+        <button
+          onClick={() => setShowDeleteConfirm(true)}
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border-2 border-red-100 text-red-400 text-sm font-bold hover:bg-red-50 hover:border-red-200 transition-all"
+        >
+          <MaterialIcon icon="delete_outline" size="sm" />
+          Excluir {pet.name}
+        </button>
+      </div>
     </div>
   );
 }
