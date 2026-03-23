@@ -4,13 +4,18 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { z } from "zod";
 
 const petshopUpdateSchema = z.object({
-  name:    z.string().min(2).optional(),
-  slug:    z.string().min(3).optional(),
-  logoUrl: z.string().url().optional().or(z.literal("")),
-  phone:   z.string().optional(),
-  address: z.string().optional(),
-  city:    z.string().optional(),
-  state:   z.string().optional(),
+  name:          z.string().min(2).optional(),
+  slug:          z.string().min(3).optional(),
+  logoUrl:       z.string().url().optional().or(z.literal("")),
+  phone:         z.string().optional(),
+  address:       z.string().optional(),
+  city:          z.string().optional(),
+  state:         z.string().optional(),
+  businessHours: z.record(z.object({
+    active: z.boolean(),
+    open:   z.string(),
+    close:  z.string(),
+  })).optional(),
 });
 
 export const dynamic = "force-dynamic";

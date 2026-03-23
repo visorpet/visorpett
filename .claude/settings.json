@@ -1,3 +1,8 @@
 {
-  "language": "portuguese"
+  "language": "portuguese",
+  "permissions": {
+    "allow": [
+      "Bash(npx next:*)"
+    ]
+  }
 }

@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { MaterialIcon, Avatar } from "@/components/ui";
+import { MaterialIcon, PhotoUpload } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 
 type PetShop = {
   name: string;
   slug: string;
+  logoUrl?: string | null;
   subscription?: { plan: string; status: string } | null;
 };
 
@@ -34,13 +35,14 @@ function MenuItem({ icon, label, badge, danger, href, onClick }: {
     </div>
   );
   if (href) return <Link href={href} className="block">{content}</Link>;
-  return <button className="w-full text-left block" onClick={onClick || (() => alert("Em breve!"))}>{content}</button>;
+  return <button className="w-full text-left block" onClick={onClick}>{content}</button>;
 }
 
 export default function DonoPerfilPage() {
   const router = useRouter();
   const [shop, setShop] = useState<PetShop | null>(null);
   const [groomerCount, setGroomerCount] = useState(0);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/petshops/me")
@@ -49,10 +51,21 @@ export default function DonoPerfilPage() {
         if (json.data) {
           setShop(json.data);
           setGroomerCount(json.data.groomers?.length ?? 0);
+          setLogoUrl(json.data.logoUrl ?? null);
         }
       })
       .catch(() => {});
   }, []);
+
+  async function handleLogoUploaded(url: string) {
+    setLogoUrl(url);
+    await fetch("/api/petshops/me", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ logoUrl: url }),
+    });
+    setShop((s) => s ? { ...s, logoUrl: url } : s);
+  }
 
   async function handleSignOut() {
     if (!confirm("Tem certeza que deseja sair?")) return;
@@ -78,9 +91,19 @@ export default function DonoPerfilPage() {
     <div className="page-container">
       <PageHeader title="Meu Negócio" />
 
+      {/* ── Header com logo upload ── */}
       <section className="animate-slide-up mb-6">
-        <div className="bg-gradient-primary rounded-2xl p-6 text-white flex gap-4 items-center">
-          <Avatar name={shopName} size="lg" ring ringColor="ring-white/40" />
+        <div className="bg-gradient-primary rounded-2xl p-5 text-white flex gap-4 items-center">
+          <PhotoUpload
+            currentUrl={logoUrl}
+            name={shopName}
+            folder="logos"
+            onUploaded={handleLogoUploaded}
+            size="lg"
+            shape="circle"
+            label=""
+            className="flex-shrink-0"
+          />
           <div className="flex-1 min-w-0">
             <h1 className="text-xl font-black truncate">{shopName}</h1>
             <p className="text-white/70 text-xs mt-1">{planLabel} • Ativo</p>
@@ -89,7 +112,7 @@ export default function DonoPerfilPage() {
         </div>
       </section>
 
-      {/* Link de agendamento público */}
+      {/* ── Link de agendamento público ── */}
       {bookingUrl && (
         <section className="animate-slide-up mb-6">
           <p className="section-label mb-3">Link de Agendamento</p>
@@ -126,26 +149,26 @@ export default function DonoPerfilPage() {
         <div>
           <p className="section-label mb-3">Gestão da Loja</p>
           <div className="flex flex-col gap-2">
-            <MenuItem icon="storefront" label="Dados do Pet Shop" />
-            <MenuItem icon="inventory_2" label="Serviços e Preços" href="/dono/servicos" />
-            <MenuItem icon="badge" label="Equipe e Tosadores" badge={groomerCount > 0 ? String(groomerCount) : undefined} href="/dono/tosador" />
-            <MenuItem icon="schedule" label="Horários de Funcionamento" />
+            <MenuItem icon="storefront"   label="Dados do Pet Shop"          href="/dono/dados" />
+            <MenuItem icon="inventory_2"  label="Serviços e Preços"           href="/dono/servicos" />
+            <MenuItem icon="badge"        label="Equipe e Tosadores"          badge={groomerCount > 0 ? String(groomerCount) : undefined} href="/dono/tosador" />
+            <MenuItem icon="schedule"     label="Horários de Funcionamento"   href="/dono/horarios" />
           </div>
         </div>
 
         <div>
           <p className="section-label mb-3">Minha Assinatura</p>
           <div className="flex flex-col gap-2">
-            <MenuItem icon="star" label="Fazer Upgrade de Plano" />
-            <MenuItem icon="receipt_long" label="Faturas da Plataforma" />
+            <MenuItem icon="star"         label="Fazer Upgrade de Plano"      href="/dono/planos" />
+            <MenuItem icon="receipt_long" label="Faturas da Plataforma"        href="/dono/faturas" />
           </div>
         </div>
 
         <div>
           <p className="section-label mb-3">Sistema</p>
           <div className="flex flex-col gap-2">
-            <MenuItem icon="help" label="Central de Ajuda" />
-            <MenuItem icon="logout" label="Sair da Conta" danger onClick={handleSignOut} />
+            <MenuItem icon="help"   label="Central de Ajuda"  href="/dono/ajuda" />
+            <MenuItem icon="logout" label="Sair da Conta"     danger onClick={handleSignOut} />
           </div>
         </div>
       </section>
