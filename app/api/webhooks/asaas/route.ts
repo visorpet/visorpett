@@ -22,8 +22,19 @@ const EVENT_STATUS: Record<string, string | null> = {
   SUBSCRIPTION_DELETED: "CANCELLED",
 };
 
+const WEBHOOK_TOKEN = process.env.ASAAS_WEBHOOK_TOKEN;
+
 export async function POST(req: Request) {
   try {
+    // Valida token de autenticação do Asaas
+    if (WEBHOOK_TOKEN) {
+      const authHeader = req.headers.get("asaas-access-token") ?? req.headers.get("authorization") ?? "";
+      if (authHeader !== WEBHOOK_TOKEN) {
+        console.warn("[ASAAS_WEBHOOK] Token inválido");
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+    }
+
     const body = await req.json();
     const { event, payment, subscription } = body;
 
