@@ -166,10 +166,9 @@ export default function ClienteInicioPage() {
       {/* ── Quick Actions ── */}
       <section className="animate-slide-up">
         <p className="section-label mb-3">Acesso rápido</p>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           <QuickAction icon="calendar_add_on" label="Novo agendamento" href="/cliente/agendamento" color="primary" />
           <QuickAction icon="pets"            label="Meus pets"        href="/cliente/meus-pets"   color="primary" />
-          <QuickAction icon="store"           label="Pet shops"        href="/cliente/petshops"    color="primary" />
           <QuickAction icon="redeem"          label="Indicações"       href="/cliente/indicacoes"  color="primary" />
         </div>
       </section>
