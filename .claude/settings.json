@@ -16,7 +16,18 @@
       "Bash(head -20 find /home/matheus/visorpett/lib -name session* -o -name auth*)",
       "Bash(cp /tmp/set_super_admin.js /home/matheus/visorpett/set_super_admin.js)",
       "Bash(node set_super_admin.js)",
-      "Bash(grep -rn \"SUPER_ADMIN\\\\|admin\" /home/matheus/visorpett/app/api/auth --include=*.ts)"
+      "Bash(grep -rn \"SUPER_ADMIN\\\\|admin\" /home/matheus/visorpett/app/api/auth --include=*.ts)",
+      "Bash(find /home/matheus/visorpett -name schema.prisma -o -name *.sql)",
+      "Bash(/home/matheus/visorpett/prisma/migration.sql:*)",
+      "Bash(source .env)",
+      "Bash(node -e \":*)",
+      "Bash(set -a)",
+      "Bash(. /home/matheus/visorpett/.env)",
+      "Bash(set +a)",
+      "Bash(ls -la /home/matheus/visorpett/app/cliente/meus-pets/[id]/)"
+    ],
+    "additionalDirectories": [
+      "/home/matheus/visorpett/app/api/pets/[id]"
     ]
   },
   "language": "portuguese"
