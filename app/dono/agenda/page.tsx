@@ -30,6 +30,7 @@ export default function AgendaPage() {
   const [selectedDay, setSelectedDay] = useState(new Date());
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const weekDays = useMemo(() => {
     const today = new Date();
@@ -61,8 +62,11 @@ export default function AgendaPage() {
     setLoading(true);
     fetch(`/api/appointments?date=${dateStr}`)
       .then((r) => r.json())
-      .then((json) => setAppointments(json.data ?? []))
-      .catch(() => setAppointments([]))
+      .then((json) => {
+        if (json.error) { setFetchError(json.error); setAppointments([]); }
+        else { setFetchError(null); setAppointments(json.data ?? []); }
+      })
+      .catch(() => { setFetchError("Erro de conexão"); setAppointments([]); })
       .finally(() => setLoading(false));
   }, [selectedDay]);
 
@@ -165,6 +169,11 @@ export default function AgendaPage() {
           Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="bg-white p-4 rounded-xl animate-pulse h-20 border border-gray-100" />
           ))
+        ) : fetchError ? (
+          <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-600 font-medium">
+            <MaterialIcon icon="error_outline" size="sm" className="text-red-400 flex-shrink-0" />
+            {fetchError}
+          </div>
         ) : filtered.length === 0 ? (
           <PetEmpty type="cat" title="Nenhum agendamento neste dia." subtitle="Aproveite para descansar! 😴" />
         ) : (

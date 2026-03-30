@@ -150,6 +150,7 @@ export async function POST(
         notes:      data.notes || null,
         totalPrice: service.price,
         status:     "agendado",
+        createdAt:  now,
         updatedAt:  now,
       })
       .select("id, date, status, totalPrice")

@@ -70,7 +70,7 @@ export default function PerfilPage() {
         <div>
           <p className="section-label mb-3 ml-2">Minha Conta</p>
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden divide-y divide-gray-50">
-            <MenuAction icon="person" label="Editar Perfil" onClick={() => {}} />
+            <MenuAction icon="person" label="Editar Perfil" onClick={() => router.push("/cliente/perfil/editar")} />
             <MenuAction icon="notifications" label="Notificações" onClick={() => router.push("/cliente/notificacoes")} />
             <MenuAction icon="security" label="Segurança" onClick={() => {}} />
             <MenuAction icon="credit_card" label="Pagamentos" onClick={() => {}} />
@@ -90,8 +90,8 @@ export default function PerfilPage() {
         <div>
           <p className="section-label mb-3 ml-2">Outros</p>
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden divide-y divide-gray-50">
-            <MenuAction icon="help" label="Ajuda e Suporte" onClick={() => {}} />
-            <MenuAction icon="description" label="Termos e Privacidade" onClick={() => {}} />
+            <MenuAction icon="help" label="Ajuda e Suporte" onClick={() => window.open("https://wa.me/5562984810290", "_blank")} />
+            <MenuAction icon="description" label="Termos e Privacidade" onClick={() => router.push("/cliente/termos")} />
             <button 
               onClick={handleLogout}
               className="w-full flex items-center justify-between p-4 hover:bg-red-50 transition-colors group"

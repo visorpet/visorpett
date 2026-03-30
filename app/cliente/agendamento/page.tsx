@@ -369,7 +369,7 @@ export default function AgendamentoPage() {
       )}
 
       {/* Floating Confirm Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent pointer-events-none">
+      <div className="fixed bottom-[72px] left-0 right-0 px-6 pb-3 pt-6 bg-gradient-to-t from-white via-white to-transparent pointer-events-none">
         <div className="max-w-md mx-auto pointer-events-auto">
           <button
             disabled={!isReady || isSubmitting}

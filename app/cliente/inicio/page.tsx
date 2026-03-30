@@ -262,9 +262,11 @@ export default function ClienteInicioPage() {
         {selectedPet && (
           <div className="card mt-3">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center">
-                <MaterialIcon icon="pets" size="lg" className="text-primary" fill />
-              </div>
+              <Avatar
+                src={selectedPet.photoUrl || undefined}
+                name={selectedPet.name}
+                size="lg"
+              />
               <div className="flex-1">
                 <p className="font-bold text-gray-900 text-base">{selectedPet.name}</p>
                 <p className="text-sm text-gray-500 capitalize">

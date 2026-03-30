@@ -54,7 +54,7 @@ export function Avatar({
   const initials = getInitials(name);
 
   return (
-    <div className={cn("relative inline-flex flex-shrink-0", className)}>
+    <div className={cn("relative inline-flex flex-shrink-0 rounded-full overflow-hidden", sizeMap[size], className)}>
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img

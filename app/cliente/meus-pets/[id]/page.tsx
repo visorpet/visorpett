@@ -17,6 +17,10 @@ export default function PetProntuarioPage({ params }: { params: { id: string } }
   const [activeTab, setActiveTab] = useState<"historico" | "vacinas" | "obs">("historico");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showVaccineModal, setShowVaccineModal] = useState(false);
+  const [vaccineForm, setVaccineForm] = useState({ name: "", appliedAt: "", nextDueAt: "", vetName: "" });
+  const [savingVaccine, setSavingVaccine] = useState(false);
+  const [deletingVaccineId, setDeletingVaccineId] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchPet() {
@@ -83,6 +87,36 @@ export default function PetProntuarioPage({ params }: { params: { id: string } }
     }
   }
 
+  async function handleSaveVaccine() {
+    if (!vaccineForm.name || !vaccineForm.appliedAt) return;
+    setSavingVaccine(true);
+    try {
+      const res = await fetch(`/api/pets/${params.id}/vaccines`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(vaccineForm),
+      });
+      const json = await res.json();
+      if (json.data) {
+        setPet((prev: any) => ({ ...prev, vaccines: [...(prev.vaccines || []), json.data] }));
+        setShowVaccineModal(false);
+        setVaccineForm({ name: "", appliedAt: "", nextDueAt: "", vetName: "" });
+      }
+    } finally {
+      setSavingVaccine(false);
+    }
+  }
+
+  async function handleDeleteVaccine(vaccineId: string) {
+    setDeletingVaccineId(vaccineId);
+    try {
+      await fetch(`/api/pets/${params.id}/vaccines?vaccineId=${vaccineId}`, { method: "DELETE" });
+      setPet((prev: any) => ({ ...prev, vaccines: prev.vaccines.filter((v: any) => v.id !== vaccineId) }));
+    } finally {
+      setDeletingVaccineId(null);
+    }
+  }
+
   return (
     <div className="page-container font-sans">
       <PageHeader
@@ -99,6 +133,80 @@ export default function PetProntuarioPage({ params }: { params: { id: string } }
           href: `/cliente/meus-pets/${params.id}/editar`,
         }}
       />
+
+      {/* Modal de cadastro de vacina */}
+      {showVaccineModal && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm px-4 pb-8">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl animate-slide-up">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500">
+                  <MaterialIcon icon="vaccines" size="sm" />
+                </div>
+                <h3 className="font-black text-gray-900 text-lg">Nova Vacina</h3>
+              </div>
+              <button onClick={() => setShowVaccineModal(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors">
+                <MaterialIcon icon="close" size="sm" />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">Nome da vacina *</label>
+                <input
+                  type="text"
+                  placeholder="Ex: V8 Polivalente"
+                  value={vaccineForm.name}
+                  onChange={e => setVaccineForm(f => ({ ...f, name: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-primary transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">Data de aplicação *</label>
+                <input
+                  type="date"
+                  value={vaccineForm.appliedAt}
+                  onChange={e => setVaccineForm(f => ({ ...f, appliedAt: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-primary transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">Próxima dose</label>
+                <input
+                  type="date"
+                  value={vaccineForm.nextDueAt}
+                  onChange={e => setVaccineForm(f => ({ ...f, nextDueAt: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-primary transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">Veterinário</label>
+                <input
+                  type="text"
+                  placeholder="Nome do veterinário (opcional)"
+                  value={vaccineForm.vetName}
+                  onChange={e => setVaccineForm(f => ({ ...f, vetName: e.target.value }))}
+                  className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-primary transition-colors"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setShowVaccineModal(false)} className="flex-1 btn-secondary py-3 rounded-2xl">
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveVaccine}
+                disabled={savingVaccine || !vaccineForm.name || !vaccineForm.appliedAt}
+                className="flex-1 btn-primary py-3 rounded-2xl disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {savingVaccine ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <MaterialIcon icon="check" size="sm" />}
+                Salvar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de confirmação de exclusão */}
       {showDeleteConfirm && (
@@ -238,6 +346,14 @@ export default function PetProntuarioPage({ params }: { params: { id: string } }
 
         {activeTab === "vacinas" && (
           <div className="flex flex-col gap-4">
+            <button
+              onClick={() => setShowVaccineModal(true)}
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl border-2 border-dashed border-blue-200 text-blue-500 text-sm font-bold hover:bg-blue-50 hover:border-blue-300 transition-all"
+            >
+              <MaterialIcon icon="add" size="sm" />
+              Registrar vacina
+            </button>
+
             {vaccines.map((v: any) => (
               <div key={v.id} className="card p-5 hover:border-blue-200 transition-colors">
                 <div className="flex items-center justify-between mb-3">
@@ -247,18 +363,36 @@ export default function PetProntuarioPage({ params }: { params: { id: string } }
                     </div>
                     <p className="font-bold text-gray-900 text-base">{v.name}</p>
                   </div>
-                  <Badge variant={v.nextDueAt ? "success" : "neutral"} className="px-3">
-                    {v.nextDueAt ? "Em dia" : "Aplicada"}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={v.nextDueAt ? "success" : "neutral"} className="px-3">
+                      {v.nextDueAt ? "Em dia" : "Aplicada"}
+                    </Badge>
+                    <button
+                      onClick={() => handleDeleteVaccine(v.id)}
+                      disabled={deletingVaccineId === v.id}
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-gray-300 hover:text-red-400 hover:bg-red-50 transition-all disabled:opacity-40"
+                    >
+                      {deletingVaccineId === v.id
+                        ? <span className="w-3 h-3 border-2 border-red-300 border-t-transparent rounded-full animate-spin" />
+                        : <MaterialIcon icon="delete_outline" size="sm" />
+                      }
+                    </button>
+                  </div>
                 </div>
                 <div className="flex justify-between text-xs font-medium text-gray-500 pt-3 border-t border-gray-50">
                   <p className="flex items-center gap-1"><MaterialIcon icon="done_all" className="text-[14px]!" /> Aplicada em: {formatDate(v.appliedAt)}</p>
                   {v.nextDueAt && <p className="text-primary flex items-center gap-1"><MaterialIcon icon="event" className="text-[14px]!" /> Próxima: {formatDate(v.nextDueAt)}</p>}
                 </div>
+                {v.vetName && (
+                  <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                    <MaterialIcon icon="person" className="text-[14px]!" />
+                    {v.vetName}
+                  </p>
+                )}
               </div>
             ))}
             {vaccines.length === 0 && (
-              <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+              <div className="text-center py-16 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
                 <MaterialIcon icon="vaccines" size="xl" className="text-gray-300 mb-3" />
                 <p className="text-gray-400 text-sm font-medium">Nenhuma vacina registrada.</p>
               </div>
