@@ -414,9 +414,9 @@ export default function ClienteDetalhe() {
             </a>
             <button
               onClick={() => setShowNew(true)}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-primary/10 text-primary rounded-xl text-sm font-semibold hover:bg-primary/20 transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-primary/10 text-primary rounded-xl text-sm font-semibold hover:bg-primary/20 transition-colors whitespace-nowrap"
             >
-              <MaterialIcon icon="event_add" size="sm" /> Novo agendamento
+              <MaterialIcon icon="event_add" size="sm" /> Agendar
             </button>
           </div>
         </div>
