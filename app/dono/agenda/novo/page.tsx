@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MaterialIcon, Badge } from "@/components/ui";
 import { cn, formatCurrency } from "@/lib/utils";
@@ -25,6 +25,8 @@ function getNext14Days() {
 
 export default function NovoAgendamentoPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const preselectedClientId = searchParams.get("clientId") ?? "";
   const days = useMemo(() => getNext14Days(), []);
 
   const [clients, setClients] = useState<any[]>([]);
@@ -32,7 +34,7 @@ export default function NovoAgendamentoPage() {
   const [groomers, setGroomers] = useState<any[]>([]);
   const [timeSlots, setTimeSlots] = useState<{ time: string; available: boolean }[]>([]);
 
-  const [selectedClientId, setSelectedClientId] = useState("");
+  const [selectedClientId, setSelectedClientId] = useState(preselectedClientId);
   const [selectedPetId, setSelectedPetId] = useState("");
   const [selectedServiceId, setSelectedServiceId] = useState("");
   const [selectedGroomerId, setSelectedGroomerId] = useState("");
